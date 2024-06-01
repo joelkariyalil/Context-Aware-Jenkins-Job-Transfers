@@ -13,7 +13,7 @@ import argparse
 import json
 
 
-def establish_connection_to_servers(production_url, interim_url, production_username, interim_username, password):
+def establish_connection_to_servers(production_url, interim_url, production_username, interim_username, production_password, interim_password):
     """
     Establishes connection to servers using the provided production and interim URLs, username, and password.
 
@@ -28,8 +28,8 @@ def establish_connection_to_servers(production_url, interim_url, production_user
     - interim_server (jenkins.Jenkins): Connection to the interim server.
     """
     try:
-        production_server = jenkins.Jenkins(production_url, username=production_username, password=password)
-        interim_server = jenkins.Jenkins(interim_url, username=interim_username, password=password)
+        production_server = jenkins.Jenkins(production_url, username=production_username, password=production_password)
+        interim_server = jenkins.Jenkins(interim_url, username=interim_username, password=interim_password)
         return production_server, interim_server
     except Exception as e:
         print('Exception in Establishing Connection: ', e)
@@ -570,6 +570,7 @@ def parse_arguments():
         print(f"Error parse_arguments: {e}")
 
 
+'''
 if __name__ == "__main__":
 
     # Get these values from the Environment
@@ -706,3 +707,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         print("Exception in Main Function: ", e)
+        
+        
+'''
