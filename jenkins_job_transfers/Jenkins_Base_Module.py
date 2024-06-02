@@ -570,7 +570,6 @@ def parse_arguments():
         print(f"Error parse_arguments: {e}")
 
 
-'''
 if __name__ == "__main__":
 
     # Get these values from the Environment
@@ -707,6 +706,3 @@ if __name__ == "__main__":
 
     except Exception as e:
         print("Exception in Main Function: ", e)
-        
-        
-'''
