@@ -563,7 +563,7 @@ def parse_arguments():
     """
     try:
         parser = argparse.ArgumentParser(description="Add '--check true' to ensure that check.properties is created")
-        parser.add_argument("--function", help="True to check the jobs and views", type=str, required=True)
+        parser.add_argument("--function", help="True to check the jobs and views", type=str)
 
         return parser.parse_args()
     except Exception as e:
@@ -582,6 +582,10 @@ if __name__ == "__main__":
         interim_url = os.environ['Interim_URL']
         args = parse_arguments()
         function = args.function
+
+        # The Default action of the Job is to Publish
+        if not function:
+            function = 'publish'
 
         # Credentials used for Jenkins Server Connection
         production_username = "buildmgr@tallysolutions.com"

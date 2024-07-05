@@ -18,25 +18,20 @@ def connect(production_machine_url, dev_machine_url, production_username, dev_us
             dev_password):
     production_conn, server_conn = jbm.establish_connection_to_servers(production_machine_url, dev_machine_url,
                                                                        production_username, dev_username,
-                                                                       production_password, production_password,
-                                                                       dev_password)
+                                                                       production_password, dev_password)
     return production_conn, server_conn
 
 
-def transfer_jobs(jobs, allowDuplicateJobs=True):
+def transfer(publish_list, type="job", allowDuplicateJobs=False):
     pass
 
 
-def transfer_views(views, allDuplicateJobs=True):
+def check_publish_standards(publish_list, type="job", allowDuplicateJobs=False):
     pass
 
 
-def check_publish_view_standards(views, type="view"):
+
+def check_plugin_dependencies(publish_list, type="job"):
     pass
-
-
-def check_publish_job_standards(jobs, type="job"):
-    pass
-
 
 
