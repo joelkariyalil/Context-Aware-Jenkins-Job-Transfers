@@ -183,23 +183,23 @@ def plugin_differences(production_conn, interim_conn):
     return list(set(get_plugin_list(interim_conn)).difference(get_plugin_list(production_conn)))
 
 
-def check_job_plugins_in_production(production_conn, plugins_to_install_production, job, config_xml):
+def check_job_plugins_in_production(production_conn, interim_conn, plugins_to_install_production, job):
     """
     A function to check and install job-specific plugins in a production environment.
 
     Args:
         production_conn: The connection to the production environment.
+        interim_conn: The connection to the interim environment.
         plugins_to_install_production: List of plugins to be installed in production.
         job: The job for which plugins are being checked and installed.
-        config_xml: The configuration XML file for the job.
 
     Returns:
         bool: True if all plugins were successfully installed, False otherwise.
     """
     try:
+        config_xml = get_config_xml(interim_conn, job)
         print(f'\nPLUGIN CHECK FOR {job}\n')
-        job_specific_plugins = get_job_specific_plugins(
-            config_xml)  # returns a list of jobs required for a particular job in interim
+        job_specific_plugins = get_job_specific_plugins(config_xml)  # returns a list of jobs required for a particular job in interim
         plugins_to_install = list(set(plugins_to_install_production) & set(job_specific_plugins))
         print(f'Plugins to be INSTALLED for {job}: {plugins_to_install}')
         chk_flag = install_plugin_in_production(production_conn, plugins_to_install)
@@ -223,6 +223,7 @@ def get_job_specific_plugins(config_xml):
     Returns:
     - list: A list of names of job-specific plugins extracted from the XML.
     """
+
     try:
         plugin_names = []
         try:
@@ -493,9 +494,8 @@ def pre_check(action, list_name):
                 for job in job_name_list:
                     config_xml = get_config_xml(interim_conn, job)
                     if config_xml:
-                        job_specific_plugins_exist = check_job_plugins_in_production(production_conn,
-                                                                                     plugins_to_install_production, job,
-                                                                                     config_xml)
+                        job_specific_plugins_exist = check_job_plugins_in_production(production_conn, interim_conn,
+                                                                                     plugins_to_install_production, job)
                         if job_specific_plugins_exist:
                             temp.append(True)
                         else:
@@ -527,9 +527,8 @@ def pre_check(action, list_name):
                         job_list.append(job)
                         config_xml = get_config_xml(interim_conn, job)
                         if config_xml:
-                            job_specific_plugins_exist = check_job_plugins_in_production(production_conn,
-                                                                                         plugins_to_install_production, job,
-                                                                                         config_xml)
+                            job_specific_plugins_exist = check_job_plugins_in_production(production_conn, interim_conn,
+                                                                                         plugins_to_install_production, job)
                             if job_specific_plugins_exist:
                                 temp.append(True)
                             else:
@@ -590,7 +589,8 @@ if __name__ == "__main__":
         # Credentials used for Jenkins Server Connection
         production_username = "buildmgr@tallysolutions.com"
         interim_username = "buildmgr@tallysolutions.com"
-        password = "Bm1v1414"
+        production_password = "Bm1v1414"
+        interim_password = "Bm1v1414"
 
         list_name = list_name.split(',')
         list_name = [job.strip() for job in list_name if job]
@@ -600,7 +600,7 @@ if __name__ == "__main__":
             exit(1)
 
         production_conn, interim_conn = establish_connection_to_servers(production_url, interim_url, production_username,
-                                                                        interim_username, password)
+                                                                        interim_username, production_password, interim_password)
 
         plugins_to_install_production = plugin_differences(production_conn, interim_conn)
 
@@ -632,9 +632,8 @@ if __name__ == "__main__":
                             config_xml = get_config_xml(interim_conn, job)
                             if config_xml:
 
-                                job_specific_plugins_exist = check_job_plugins_in_production(production_conn,
-                                                                                             plugins_to_install_production, job,
-                                                                                             config_xml)  # this should basically be 1 function, that returns a boolean value True if all the plugins are present, else
+                                job_specific_plugins_exist = check_job_plugins_in_production(production_conn, interim_conn,
+                                                                                             plugins_to_install_production, job)  # this should basically be 1 function, that returns a boolean value True if all the plugins are present, else
 
                                 if job_specific_plugins_exist:
 
@@ -680,10 +679,9 @@ if __name__ == "__main__":
                                 config_xml = get_config_xml(interim_conn, job)
                                 if config_xml:
 
-                                    job_specific_plugins_exist = check_job_plugins_in_production(production_conn,
+                                    job_specific_plugins_exist = check_job_plugins_in_production(production_conn, interim_conn,
                                                                                                  plugins_to_install_production,
-                                                                                                 job,
-                                                                                                 config_xml)  # this should basically be 1 function, that returns a boolean value True if all the plugins are present, else
+                                                                                                 job)  # this should basically be 1 function, that returns a boolean value True if all the plugins are present, else
                                     if job_specific_plugins_exist:
 
                                         print('PUBLISHING DETAILS\n')
