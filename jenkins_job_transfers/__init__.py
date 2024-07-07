@@ -41,16 +41,49 @@ def check_plugin_dependencies(production_conn, interim_conn, publish_list, type=
 
         for job in publish_list:
 
-            chk_plugins = jbm.check_job_plugins_in_production(production_conn, interim_conn, plugins_to_install_production,job)
+            chk_plugins = jbm.check_job_plugins_in_production_without_install(interim_conn, plugins_to_install_production,job)
             if chk_plugins:
-                print()
-
-
-
+                return chk_plugins
 
     elif type == "view":
 
-        for job in
-        pass
+        interim_views_list = jbm.get_views_list(interim_conn)
+        jobs_plugins = {}
+        for view in publish_list:
+            if view in interim_views_list:
+                interim_jobs_list = jbm.get_view_and_its_jobs(interim_conn)[view]
+                for job in interim_jobs_list:
+                    chk_plugins = jbm.check_job_plugins_in_production_without_install(interim_conn, plugins_to_install_production, job)
+                    if chk_plugins:
+                        jobs_plugins[job] = chk_plugins
+
+        return jobs_plugins
+
+
+def check_and_install_plugin_dependencies(production_conn, interim_conn, publish_list, type="job"):
+
+    if not isinstance(publish_list, list):
+        raise TypeError("Publish List Must be a List!")
+    if not isinstance(type, str):
+        raise TypeError("Type Must be a String!")
+
+    plugins_to_install_production = jbm.plugin_differences(production_conn, interim_conn)
+
+    if type == "job":
+
+        for job in publish_list:
+
+            return jbm.check_job_plugins_in_production(interim_conn, production_conn, plugins_to_install_production, job)
+
+    elif type == "view":
+
+        interim_views_list = jbm.get_views_list(interim_conn)
+        jobs_plugins = {}
+        for view in publish_list:
+            if view in interim_views_list:
+                interim_jobs_list = jbm.get_view_and_its_jobs(interim_conn)[view]
+                for job in interim_jobs_list:
+                    chk_plugins = jbm.check_job_plugins_in_production(interim_conn, production_conn, plugins_to_install_production, job)
+                    if chk_plugins:
 
 

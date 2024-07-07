@@ -213,6 +213,30 @@ def check_job_plugins_in_production(production_conn, interim_conn, plugins_to_in
         print("Error in check_job_plugins_in_production: ", e)
 
 
+def check_job_plugins_in_production_without_install(interim_conn, plugins_to_install_production, job):
+    """
+    A function to check and install job-specific plugins in a production environment.
+
+    Args:
+        production_conn: The connection to the production environment.
+        interim_conn: The connection to the interim environment.
+        plugins_to_install_production: List of plugins to be installed in production.
+        job: The job for which plugins are being checked and installed.
+
+    Returns:
+        bool: True if all plugins were successfully installed, False otherwise.
+    """
+    try:
+        config_xml = get_config_xml(interim_conn, job)
+        print(f'\nPLUGIN CHECK FOR {job}\n')
+        job_specific_plugins = get_job_specific_plugins(config_xml)  # returns a list of jobs required for a particular job in interim
+        plugins_to_install = list(set(plugins_to_install_production) & set(job_specific_plugins))
+        print(f'Plugins to be INSTALLED for {job}: {plugins_to_install}')
+        return plugins_to_install
+    except Exception as e:
+        print("Error in check_job_plugins_in_production: ", e)
+
+
 def get_job_specific_plugins(config_xml):
     """
     Get job specific plugins from the given config XML.
