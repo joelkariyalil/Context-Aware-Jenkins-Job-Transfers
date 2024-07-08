@@ -625,10 +625,10 @@ if __name__ == "__main__":
             function = 'publish'
 
         # Credentials used for Jenkins Server Connection
-        production_username = "buildmgr@tallysolutions.com"
-        interim_username = "buildmgr@tallysolutions.com"
-        production_password = "Bm1v1414"
-        interim_password = "Bm1v1414"
+        production_username = os.environ['Production_Username']
+        production_password = os.environ['Production_Password']
+        interim_username = os.environ['Interim_Username']
+        interim_password = os.environ['Interim_Password']
 
         list_name = list_name.split(',')
         list_name = [job.strip() for job in list_name if job]
