@@ -78,12 +78,15 @@ def check_and_install_plugin_dependencies(production_conn, interim_conn, publish
     elif type == "view":
 
         interim_views_list = jbm.get_views_list(interim_conn)
-        jobs_plugins = {}
         for view in publish_list:
             if view in interim_views_list:
                 interim_jobs_list = jbm.get_view_and_its_jobs(interim_conn)[view]
                 for job in interim_jobs_list:
                     chk_plugins = jbm.check_job_plugins_in_production(interim_conn, production_conn, plugins_to_install_production, job)
                     if chk_plugins:
+                        return True
+
+        return False
+
 
 
