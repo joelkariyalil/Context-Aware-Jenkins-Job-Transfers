@@ -4,3 +4,4 @@ production_url = None
 interim_url = None
 allowDuplicates = None
 mode = None
+table = None
