@@ -7,9 +7,7 @@ Created On - 12-03-2024
 """
 
 import jenkins
-import os
 from lxml import etree
-import argparse
 import json
 from . import utils as jutils
 from . import config as cfg
@@ -30,7 +28,6 @@ def establish_connection_to_servers(production_url, interim_url, production_user
     - production_server (jenkins.Jenkins): Connection to the production server.
     - interim_server (jenkins.Jenkins): Connection to the interim server.
     """
-    global mode
     try:
         mode = cfg.mode
         production_server = jenkins.Jenkins(production_url, username=production_username, password=production_password)
@@ -41,19 +38,19 @@ def establish_connection_to_servers(production_url, interim_url, production_user
         if mode == 'console': print('Exception in Establishing Connection: ', e)
 
 
-def install_plugin_in_production(production_conn, to_install_plugins_list, mode='console'):
+def install_plugin_in_production(to_install_plugins_list):
     """
     Installs a list of plugins in the production environment.
 
     Args:
-        production_conn (object): The connection object for the production environment.
         to_install_plugins_list (list): A list of plugins to be installed.
-        mode (str, optional): The mode of operation. Defaults to 'console'
 
     Returns:
         bool: True if all plugins are successfully installed, False otherwise.
     """
     try:
+        production_conn = cfg.production_conn
+        mode = cfg.mode
         flag_installed = []
         for plugin in to_install_plugins_list:
             try:
@@ -66,7 +63,7 @@ def install_plugin_in_production(production_conn, to_install_plugins_list, mode=
         else:
             return True
     except Exception as e:
-        if mode == 'console': print("Error in install_plugin_in_production: ", e)
+        print("Error in install_plugin_in_production: ", e)
 
 
 def plugin_differences():
@@ -97,7 +94,6 @@ def check_job_plugins_in_production(job):
         bool: True if all plugins were successfully installed, False otherwise.
     """
     try:
-        production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
         plugins_to_install_production = plugin_differences()
         mode = cfg.mode
@@ -110,7 +106,7 @@ def check_job_plugins_in_production(job):
             config_xml)  # returns a list of jobs required for a particular job in interim
         plugins_to_install = list(set(plugins_to_install_production) & set(job_specific_plugins))
         if mode == 'console': print(f'Plugins to be INSTALLED for {job}: {plugins_to_install}')
-        chk_flag = install_plugin_in_production(production_conn, plugins_to_install, mode)
+        chk_flag = install_plugin_in_production(plugins_to_install)
         if chk_flag:
             if mode == 'console': print(f'All Plugins INSTALLED in Production Server {production_url}\n\n')
             return True
@@ -261,6 +257,28 @@ def production_view_clean_up():
         return False
 
 
+def interim_view_clean_up():
+    """
+    Function to clean up interim views by deleting those with no associated jobs.
+    """
+    try:
+
+        interim_conn = cfg.interim_conn
+        interim_url = cfg.interim_url
+        mode = cfg.mode
+        interim_specific_views_and_jobs = jutils.get_view_and_its_jobs(interim_conn)
+        for view, jobs in interim_specific_views_and_jobs.items():
+            if len(jobs) == 0:
+                interim_conn.delete_view(view)
+                if mode == 'console': print(f'View {view} Deleted')
+        if mode == 'console': print(f'\n\n\nInterim Server {interim_url} Cleaned!\n\n\n')
+        return True
+
+    except Exception as e:
+        print("Exception in interim_view_clean_up! Error: ", e)
+        return False
+
+
 def chk_publish_job_standards(job_to_update):
     """
     Check if a job meets certain standards by comparing it with views and jobs from different connections.
@@ -275,6 +293,7 @@ def chk_publish_job_standards(job_to_update):
 
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
+        allowDuplicates = cfg.allowDuplicates
         mode = cfg.mode
 
         view_list = []
@@ -293,6 +312,8 @@ def chk_publish_job_standards(job_to_update):
             return False
 
         else:
+            if allowDuplicates:
+                return True
             if mode == 'console': print(f"\n\nDUPLICATES of {job_to_update} Exists on Views\t\t->\t{view_list}\n\n")
             return False
 
@@ -342,6 +363,9 @@ def job_pre_check(jobs_name_list):
         for job in jobs_name_list:
             if not chk_publish_job_standards(job):
                 return False
+            else:
+                if mode == 'console': print(f"\n\n{job} meets requirements for publishing!\n\n")
+
         return True
 
     except Exception as e:
@@ -434,7 +458,6 @@ def pre_check(list_name, action):
 
 
 def transfer_jobs(job_name_list):
-
     try:
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
@@ -477,7 +500,8 @@ def transfer_jobs(job_name_list):
                             if mode == 'console': print(
                                 f"Job Specific Plugin NOT INSTALLED in Production Server: {production_url}")
                     else:
-                        if mode == 'console': print(f"{job}'s config.xml NOT RETRIEVED in Interim Server: {interim_url}")
+                        if mode == 'console': print(
+                            f"{job}'s config.xml NOT RETRIEVED in Interim Server: {interim_url}")
                 else:
                     if mode == 'console': print(f"{job} DOES NOT Exist in Interim Server: {interim_url}")
                     if job in production_jobs_list:
@@ -498,7 +522,6 @@ def transfer_jobs(job_name_list):
 
 
 def transfer_views(views_name_list):
-
     try:
 
         production_conn = cfg.production_conn
@@ -571,159 +594,3 @@ def transfer_views(views_name_list):
     except Exception as e:
         print("Error in transfer_views: ", e)
         return False
-
-
-def parse_arguments():
-    """
-    A function to parse the arguments provided to the script.
-    """
-    try:
-        parser = argparse.ArgumentParser(description="Add '--check true' to ensure that check.properties is created")
-        parser.add_argument("--function", help="True to check the jobs and views", type=str)
-
-        return parser.parse_args()
-    except Exception as e:
-        print(f"Error parse_arguments: {e}")
-
-
-'''
-if __name__ == "__main__":
-
-    # Get these values from the Environment
-
-    try:
-
-        action = os.environ['Publish']
-        list_name = os.environ['Publish_List']
-        production_url = os.environ['Production_URL']
-        interim_url = os.environ['Interim_URL']
-        args = parse_arguments()
-        function = args.function
-
-        # The Default action of the Job is to Publish
-        if not function:
-            function = 'publish'
-
-        # Credentials used for Jenkins Server Connection
-        production_username = "buildmgr@tallysolutions.com"
-        interim_username = "buildmgr@tallysolutions.com"
-        production_password = "Bm1v1414"
-        interim_password = "Bm1v1414"
-
-        list_name = list_name.split(',')
-        list_name = [job.strip() for job in list_name if job]
-
-        if production_url == '' or interim_url == '' or len(list_name) == 0:
-            print('\n\n\nError: Fill the Required Fields!\n\n')
-            exit(1)
-
-        production_conn, interim_conn = establish_connection_to_servers(production_url, interim_url,
-                                                                        production_username,
-                                                                        interim_username, production_password,
-                                                                        interim_password)
-
-        plugins_to_install_production = plugin_differences()
-
-        interim_jobs_list = jutils.get_job_list(interim_conn)
-        production_jobs_list = jutils.get_job_list(production_conn)
-        interim_views_list = jutils.get_views_list(interim_conn)
-        production_views_list = jutils.get_views_list(production_conn)
-
-        if function.lower() == 'check' and function is not None:
-            pre_check(action, list_name)
-            print("\n\n\ncheck.json file GENERATED!\n\n")
-
-        elif function.lower() == 'publish' and function is not None:
-
-            if action == 'Jobs':
-
-                job_name_list = list_name
-
-                # Performing Pre-Check here, ensuring that there are no duplicate jobs present!
-                if not job_pre_check(job_name_list):
-                    exit(1)
-
-                print('\n\nJOB MOVEMENT DETAILS\n')
-                # Update Specific Jobs
-                if len(job_name_list) != 0:
-                    for job in job_name_list:
-                        print('\n' + job, end='\n' + '_' * 101 + '\n\n')
-                        if job in interim_jobs_list:
-                            config_xml = jutils.get_config_xml(interim_conn, job)
-                            if config_xml:
-
-                                job_specific_plugins_exist = check_job_plugins_in_production(job)  # this should basically be 1 function, that returns a boolean value True if all the plugins are present, else
-
-                                if job_specific_plugins_exist:
-
-                                    print('PUBLISHING DETAILS\n')
-                                    if job in production_jobs_list:
-                                        jutils.update_job(job, config_xml)
-                                    else:
-                                        jutils.create_job(job, config_xml)
-                                    check_views(job)
-
-                                else:
-                                    print(f"Job Specific Plugin NOT INSTALLED in Production Server: {production_url}")
-                            else:
-                                print(f"{job}'s config.xml NOT RETRIEVED in Interim Server: {interim_url}")
-                        else:
-                            print(f"{job} DOES NOT Exist in Interim Server: {interim_url}")
-                        print('_' * 101 + '\n\n')
-
-                else:
-                    print('Enter Job Details to Move/Update')
-
-            elif action == 'Views':
-
-                views_name_list = list_name
-                job = ''
-                flag_update = False
-                # print(views_name_list)
-
-                # Performing Pre-Check here, ensuring that there are no duplicate jobs present!
-                if not view_pre_check(views_name_list):
-                    exit(1)
-
-                print('\n\nVIEW MOVEMENT DETAILS\n')
-                # Update Specific Views, and all jobs within
-                if len(views_name_list) != 0:
-                    for view in views_name_list:
-                        print('\n' + view, end='\n' + '_' * 101 + '\n\n')
-                        if view in interim_views_list:
-                            interim_jobs_list = jutils.get_view_and_its_jobs(interim_conn)[view]
-                            for job in interim_jobs_list:
-                                print('\n' + job, end='\n' + '_' * 101 + '\n\n')
-                                # check the required plugins are installed in the Production, if not, skip
-                                config_xml = jutils.get_config_xml(interim_conn, job)
-                                if config_xml:
-
-                                    job_specific_plugins_exist = check_job_plugins_in_production(job)  # this should basically be 1 function, that returns a boolean value True if all the plugins are present, else
-                                    if job_specific_plugins_exist:
-
-                                        print('PUBLISHING DETAILS\n')
-                                        if job in production_jobs_list:
-                                            flag_update = True
-                                            jutils.update_job(job, config_xml)
-                                        else:
-                                            flag_update = True
-                                            jutils.create_job(job, config_xml)
-
-                                    else:
-                                        print(
-                                            f'Job Specific Plugin NOT INSTALLED in Production Server: {production_url}')
-                                else:
-                                    print(f"{job}'s config.xml NOT RETRIEVED in Interim Server: {interim_url}")
-                                print('_' * 101 + '\n\n')
-                        # Updating the View once the jobs have been updated/created
-                        if flag_update:
-                            check_views(job, view)
-                        flag_update = False
-                else:
-                    print('Enter View Details to Move/Update')
-
-            production_view_clean_up(production_conn)
-
-    except Exception as e:
-        print("Exception in Main Function: ", e)
-'''

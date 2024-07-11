@@ -1,6 +1,8 @@
 from . import basemodule as jbm
 from . import utils as jutils
 from . import config as cfg
+from rich.console import Console
+from rich.table import Table
 
 '''
 Functions to Support
@@ -47,6 +49,11 @@ def connect(production_machine_url, interim_machine_url, production_username, in
 def transfer(publish_list, ftype="job", mode="console", allowDuplicates=False):
     try:
 
+        console = Console()
+        cfg.table = Table(title="Transfer Status")
+
+        cfg.table.add_column("Name", "Status", "Description", justify="right", style="cyan", no_wrap=True)
+
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
 
@@ -67,26 +74,30 @@ def transfer(publish_list, ftype="job", mode="console", allowDuplicates=False):
 
         if ftype == "job":
 
-            return jbm.transfer_jobs(publish_list)
+            chk = jbm.transfer_jobs(publish_list)
+            console.print(cfg.table)
+            return chk
 
         elif ftype == "view":
 
-            return jbm.transfer_views(publish_list)
+            chk = jbm.transfer_views(publish_list)
+            console.print(cfg.table)
+            return chk
 
     except Exception as e:
         print("Error in transfer: ", e)
         return False
 
 
-def check_publish_standards(publish_list, ftype="job", mode="console", allowDuplicateJobs=False):
+def check_publish_standards(publish_list, ftype="job", mode="console", allowDuplicates=False):
     try:
-
+        console = Console()
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
 
         ftype = ftype.lower()
         mode = cfg.mode = mode.lower()
-        cfg.allowDuplicates = allowDuplicateJobs
+        cfg.allowDuplicates = allowDuplicates
 
         if not production_conn or not interim_conn:
             raise ValueError("Connection Not Established!")
@@ -100,12 +111,14 @@ def check_publish_standards(publish_list, ftype="job", mode="console", allowDupl
             raise TypeError("Invalid Mode Field! Mode = [console, quiet]")
 
         if ftype == "job":
-
-            return jbm.job_pre_check(publish_list)
+            chk = jbm.job_pre_check(publish_list)
+            console.print(cfg.table)
+            return chk
 
         elif ftype == "view":
-
-            return jbm.view_pre_check(publish_list)
+            chk = jbm.view_pre_check(publish_list)
+            console.print(cfg.table)
+            return chk
 
     except Exception as e:
         print("Error in check_publish_standards: ", e)
@@ -201,6 +214,39 @@ def check_and_install_plugin_dependencies(publish_list, ftype="job", mode="conso
         return False
 
 
-def production_cleanup():
+def production_cleanup(mode='console'):
 
-    return jbm.production_view_clean_up()
+    try:
+        production_conn = cfg.production_conn
+        interim_conn = cfg.interim_conn
+        mode = cfg.mode = mode.lower()
+
+        if not production_conn or not interim_conn:
+            raise ValueError("Connection Not Established!")
+        if mode not in ('console', 'quiet'):
+            raise TypeError("Invalid Mode Field! Mode = [console, quiet]")
+
+        return jbm.production_view_clean_up()
+
+    except Exception as e:
+        print("Error in production_cleanup: ", e)
+        return False
+
+
+def interim_cleanup(mode='console'):
+
+    try:
+        production_conn = cfg.production_conn
+        interim_conn = cfg.interim_conn
+        mode = cfg.mode = mode.lower()
+
+        if not production_conn or not interim_conn:
+            raise ValueError("Connection Not Established!")
+        if mode not in ('console', 'quiet'):
+            raise TypeError("Invalid Mode Field! Mode = [console, quiet]")
+
+        return jbm.interim_view_clean_up()
+
+    except Exception as e:
+        print("Error in interim_cleanup: ", e)
+        return False
