@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Jenkins-Transfers-Testing"
-version = "0.0.5"
+version = "0.0.6"
 description = "Transfers Job b/w Jenkins Servers with relevant Views & Plugins"
 readme = "README.md"
 license = {text = "MIT License"}
