@@ -29,13 +29,11 @@ def establish_connection_to_servers(production_url, interim_url, production_user
     - interim_server (jenkins.Jenkins): Connection to the interim server.
     """
     try:
-        mode = cfg.mode
         production_server = jenkins.Jenkins(production_url, username=production_username, password=production_password)
         interim_server = jenkins.Jenkins(interim_url, username=interim_username, password=interim_password)
-        if mode == 'console': print('Connection Established')
         return production_server, interim_server
     except Exception as e:
-        if mode == 'console': print('Exception in Establishing Connection: ', e)
+        cfg.table.add_row("", "", "Exception (establish_connection_to_servers)", str(e))
 
 
 def install_plugin_in_production(to_install_plugins_list):
@@ -50,20 +48,21 @@ def install_plugin_in_production(to_install_plugins_list):
     """
     try:
         production_conn = cfg.production_conn
-        mode = cfg.mode
         flag_installed = []
         for plugin in to_install_plugins_list:
             try:
-                if mode == 'console': print(f'INSTALLING: {plugin}')
+                cfg.table.add_row("", plugin, "Installing Plugin")
                 flag_installed.append(production_conn.install_plugin(plugin))
             except Exception as e:
-                if mode == 'console': print(f"FAILED to Install Plugin. Error: {e}")
+                cfg.table.add_row("", plugin, "Installation Failed", str(e))
+
+                flag_installed.append(False)
         if False in flag_installed:
             return False
         else:
             return True
     except Exception as e:
-        print("Error in install_plugin_in_production: ", e)
+        cfg.table.add_row("", "", "Exception (install_plugin_in_production)", str(e))
 
 
 def plugin_differences():
@@ -80,7 +79,7 @@ def plugin_differences():
 
         return list(set(jutils.get_plugin_list(interim_conn)).difference(jutils.get_plugin_list(production_conn)))
     except Exception as e:
-        print("Error in plugin_differences: ", e)
+        cfg.table.add_row("", "", "Exception (plugin_differences)", str(e))
 
 
 def check_job_plugins_in_production(job):
@@ -96,25 +95,25 @@ def check_job_plugins_in_production(job):
     try:
         interim_conn = cfg.interim_conn
         plugins_to_install_production = plugin_differences()
-        mode = cfg.mode
-        production_url = cfg.production_url
 
         config_xml = jutils.get_config_xml(interim_conn, job)
-        if mode == 'console': print(f'\nPLUGIN CHECK FOR {job}\n')
-        if mode == 'console': print(f"Production URL: {production_url}")
+        cfg.table.add_row("Plugin Check", job, "Plugin Information")
         job_specific_plugins = get_job_specific_plugins(
             config_xml)  # returns a list of jobs required for a particular job in interim
         plugins_to_install = list(set(plugins_to_install_production) & set(job_specific_plugins))
-        if mode == 'console': print(f'Plugins to be INSTALLED for {job}: {plugins_to_install}')
-        chk_flag = install_plugin_in_production(plugins_to_install)
-        if chk_flag:
-            if mode == 'console': print(f'All Plugins INSTALLED in Production Server {production_url}\n\n')
-            return True
+        if len(plugins_to_install) != 0:
+            chk_flag = install_plugin_in_production(plugins_to_install)
+            if chk_flag:
+                cfg.table.add_row("", "SUCCESS", "Install Initiated")
+                return True
+            else:
+                cfg.table.add_row("", "Success", "Restart Production Server")
+                return False
         else:
-            if mode == 'console': print(f'Install INITIATED, Please RESTART Production Server {production_url}\n\n')
-            return False
+            cfg.table.add_row("", "SUCCESS", "All Plugins Installed")
+            return True
     except Exception as e:
-        print("Error in check_job_plugins_in_production: ", e)
+        cfg.table.add_row("Plugin Check", "Failed", "Exception", str(e))
         return False
 
 
@@ -131,16 +130,18 @@ def check_job_plugins_in_production_without_install(job):
     try:
         plugins_to_install_production = plugin_differences()
         interim_conn = cfg.interim_conn
-        mode = cfg.mode
         config_xml = jutils.get_config_xml(interim_conn, job)
-        if mode == 'console': print(f'\nPLUGIN CHECK FOR {job}\n')
+        cfg.table.add_row("Plugin Check", job)
         job_specific_plugins = get_job_specific_plugins(
             config_xml)  # returns a list of jobs required for a particular job in interim
         plugins_to_install = list(set(plugins_to_install_production) & set(job_specific_plugins))
-        if mode == 'console': print(f'Plugins to be INSTALLED for {job}: {plugins_to_install}')
+        if len(plugins_to_install) != 0:
+            cfg.table.add_row("", "Plugins to be INSTALLED", str(plugins_to_install))
+        else:
+            cfg.table.add_row("", "SUCCESS", "All Plugins Installed")
         return plugins_to_install
     except Exception as e:
-        print("Error in check_job_plugins_in_production: ", e)
+        cfg.table.add_row("Plugin Check", "Failed", "Exception", str(e))
         return []
 
 
@@ -242,18 +243,16 @@ def production_view_clean_up():
     try:
 
         production_conn = cfg.production_conn
-        production_url = cfg.production_url
-        mode = cfg.mode
         production_specific_views_and_jobs = jutils.get_view_and_its_jobs(production_conn)
         for view, jobs in production_specific_views_and_jobs.items():
             if len(jobs) == 0:
                 production_conn.delete_view(view)
-                if mode == 'console': print(f'View {view} Deleted')
-        if mode == 'console': print(f'\n\n\nProduction Server {production_url} Cleaned!\n\n\n')
+                cfg.table.add_row("", view, "Deleted")
+        cfg.table.add_row("Production CleanUp", "Success")
         return True
 
     except Exception as e:
-        print("Exception in production_view_clean_up! Error: ", e)
+        cfg.table.add_row("Production CleanUp", "Exception: ", str(e))
         return False
 
 
@@ -264,18 +263,16 @@ def interim_view_clean_up():
     try:
 
         interim_conn = cfg.interim_conn
-        interim_url = cfg.interim_url
-        mode = cfg.mode
         interim_specific_views_and_jobs = jutils.get_view_and_its_jobs(interim_conn)
         for view, jobs in interim_specific_views_and_jobs.items():
             if len(jobs) == 0:
                 interim_conn.delete_view(view)
-                if mode == 'console': print(f'View {view} Deleted')
-        if mode == 'console': print(f'\n\n\nInterim Server {interim_url} Cleaned!\n\n\n')
+                cfg.table.add_row("", view, "Deleted")
+        cfg.table.add_row("Production CleanUp", "Success")
         return True
 
     except Exception as e:
-        print("Exception in interim_view_clean_up! Error: ", e)
+        cfg.table.add_row("Interim CleanUp", "Exception: ", str(e))
         return False
 
 
@@ -294,7 +291,6 @@ def chk_publish_job_standards(job_to_update):
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
         allowDuplicates = cfg.allowDuplicates
-        mode = cfg.mode
 
         view_list = []
         interim_specific_views_and_jobs = jutils.get_view_and_its_jobs(interim_conn)
@@ -305,20 +301,21 @@ def chk_publish_job_standards(job_to_update):
                 view_list.append(view)
 
         if len(view_list) == 1:
+            cfg.table.add_row("", job_to_update, "Present in View", str(view_list))
             return True
 
         elif len(view_list) == 0:
-            if mode == 'console': print(f"\n\nNOT PRESENT IN ANY VIEW: Job\t\t->\t{job_to_update}\n\n")
+            cfg.table.add_row("", job_to_update, "Not Present in any View")
             return False
 
         else:
             if allowDuplicates:
                 return True
-            if mode == 'console': print(f"\n\nDUPLICATES of {job_to_update} Exists on Views\t\t->\t{view_list}\n\n")
+            cfg.table.add_row("", job_to_update, "Duplicate Exists in Views", str(view_list))
             return False
 
     except Exception as e:
-        print("Error in chk_publish_job_standards: ", e)
+        cfg.table.add_row("", "chk_publish_job_standards()", "Exception", str(e))
         return False
 
 
@@ -333,15 +330,19 @@ def view_pre_check(views_name_list):
     - True if all jobs associated with the views pass the standards, False otherwise
     """
     try:
+        cfg.table.add_row('View Pre Check')
         interim_conn = cfg.interim_conn
         interim_specific_views_and_jobs = jutils.get_view_and_its_jobs(interim_conn)
+        flag = False
         for view in views_name_list:
             for job in interim_specific_views_and_jobs[view]:
                 if not chk_publish_job_standards(job):
-                    return False
+                    flag = True
+        if flag:
+            return False
         return True
     except Exception as e:
-        print("Error in view_pre_check: ", e)
+        cfg.table.add_row("", "view_pre_check()", "Exception: ", str(e))
         return False
 
 
@@ -355,21 +356,19 @@ def job_pre_check(jobs_name_list):
     Returns:
     bool: True if all jobs meet publishing standards, False otherwise.
     """
-    global mode
     try:
-        mode = cfg.mode
-        for job in jobs_name_list:
-            if mode == 'console': print('\n' + job, end='\n' + '_' * 101 + '\n\n')
+        cfg.table.add_row('Job Pre Check')
+        flag = False
         for job in jobs_name_list:
             if not chk_publish_job_standards(job):
-                return False
-            else:
-                if mode == 'console': print(f"\n\n{job} meets requirements for publishing!\n\n")
-
+                flag = True
+        if flag:
+            return False
         return True
 
     except Exception as e:
-        if mode == 'console': print("Error in job_pre_check: ", e)
+        cfg.table.add_row("", "job_pre_check()", "Exception: ", str(e))
+        return False
 
 
 def pre_check(list_name, action):
@@ -461,26 +460,19 @@ def transfer_jobs(job_name_list):
     try:
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
-        production_url = cfg.production_url
-        interim_url = cfg.interim_url
-        mode = cfg.mode
         allow_duplicates = cfg.allowDuplicates
 
         # Performing Pre-Check here, ensuring that there are no duplicate jobs present!
         if not allow_duplicates:
-
             if not job_pre_check(job_name_list):
-                if mode == 'console': print('Error: Duplicate Job(s) present')
-                return -1
+                raise ValueError('Error: Duplicate Job(s) present')
 
         interim_jobs_list = jutils.get_job_list(interim_conn)
         production_jobs_list = jutils.get_job_list(production_conn)
 
-        if mode == 'console': print('\n\nJOB MOVEMENT DETAILS\n')
         # Update Specific Jobs
         if len(job_name_list) != 0:
             for job in job_name_list:
-                if mode == 'console': print('\n' + job, end='\n' + '_' * 101 + '\n\n')
                 if job in interim_jobs_list:
                     config_xml = jutils.get_config_xml(interim_conn, job)
                     if config_xml:
@@ -489,7 +481,7 @@ def transfer_jobs(job_name_list):
 
                         if job_specific_plugins_exist:
 
-                            if mode == 'console': print('PUBLISHING DETAILS\n')
+                            cfg.table.add_row("Publishing Details", "Name", "Type", "Status", "Action")
                             if job in production_jobs_list:
                                 jutils.update_job(job, config_xml)
                             else:
@@ -497,27 +489,23 @@ def transfer_jobs(job_name_list):
                             check_views(job)
 
                         else:
-                            if mode == 'console': print(
-                                f"Job Specific Plugin NOT INSTALLED in Production Server: {production_url}")
+                            cfg.table.add_row("", "", "Error", "Job Specific Plugin NOT INSTALLED in Production Server")
                     else:
-                        if mode == 'console': print(
-                            f"{job}'s config.xml NOT RETRIEVED in Interim Server: {interim_url}")
+                        cfg.table.add_row("", "", "Error", f"{job}'s config.xml NOT RETRIEVED in Interim Server")
                 else:
-                    if mode == 'console': print(f"{job} DOES NOT Exist in Interim Server: {interim_url}")
+                    cfg.table.add_row("", "", "Error", f"{job} DOES NOT Exist in Interim Server")
                     if job in production_jobs_list:
                         jutils.delete_job(job)
 
-                if mode == 'console': print('_' * 101 + '\n\n')
-
         else:
-            if mode == 'console': print('Enter Job Details to Move/Update')
+            cfg.table.add_row("", "", "Error", "Enter Job Details to Move/Update")
             return False
 
         production_view_clean_up()
         return True
 
     except Exception as e:
-        print("Error in transfer_jobs: ", e)
+        cfg.table.add_row("Transfer Status", "Failed", str(e))
         return False
 
 
@@ -526,10 +514,7 @@ def transfer_views(views_name_list):
 
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn
-        interim_url = cfg.interim_url
-        mode = cfg.mode
         allow_duplicates = cfg.allowDuplicates
-        production_url = cfg.production_url
 
         job = ''
         flag_update = False
@@ -540,18 +525,14 @@ def transfer_views(views_name_list):
         # Performing Pre-Check here, ensuring that there are no duplicate jobs present!
         if not allow_duplicates:
             if not view_pre_check(views_name_list):
-                if mode == 'console': print('Error: Duplicate View(s) present')
-                return False
+                raise ValueError('Error: Duplicate Job(s) present')
 
-        if mode == 'console': print('\n\nVIEW MOVEMENT DETAILS\n')
         # Update Specific Views, and all jobs within
         if len(views_name_list) != 0:
             for view in views_name_list:
-                if mode == 'console': print('\n' + view, end='\n' + '_' * 101 + '\n\n')
                 if view in interim_views_list:
                     interim_jobs_list = jutils.get_view_and_its_jobs(interim_conn)[view]
                     for job in interim_jobs_list:
-                        if mode == 'console': print('\n' + job, end='\n' + '_' * 101 + '\n\n')
                         # check the required plugins are installed in the Production, if not, skip
                         config_xml = jutils.get_config_xml(interim_conn, job)
                         if config_xml:
@@ -559,7 +540,7 @@ def transfer_views(views_name_list):
                             job_specific_plugins_exist = check_job_plugins_in_production(job)
                             if job_specific_plugins_exist:
 
-                                if mode == 'console': print('PUBLISHING DETAILS\n')
+                                cfg.table.add_row("Publishing Details", "Name", "Type", "Status", "Action")
                                 if job in production_jobs_list:
                                     flag_update = True
                                     jutils.update_job(job, config_xml)
@@ -568,15 +549,15 @@ def transfer_views(views_name_list):
                                     jutils.create_job(job, config_xml)
 
                             else:
-                                if mode == 'console': print(
-                                    f'Job Specific Plugin NOT INSTALLED in Production Server: {production_url}')
+                                cfg.table.add_row("", "", "Error", "Job Specific Plugin NOT INSTALLED in Production Server")
+
                         else:
-                            if mode == 'console': print(
-                                f"{job}'s config.xml NOT RETRIEVED in Interim Server: {interim_url}")
-                        if mode == 'console': print('_' * 101 + '\n\n')
+                            cfg.table.add_row("", "",  "Error", f"{job}'s config.xml NOT RETRIEVED in Interim Server")
+
+                        cfg.table.add_row()
 
                 else:
-                    if mode == 'console': print(f"{view} DOES NOT Exist in Interim Server: {interim_url}")
+                    cfg.table.add_row("", "",  "Error", f"{view} DOES NOT Exist in Interim Server")
                     if view in production_jobs_list:
                         jutils.delete_view(view)
 
@@ -585,12 +566,15 @@ def transfer_views(views_name_list):
                     check_views(job, view)
                 flag_update = False
 
+                cfg.table.add_row()
+
         else:
-            if mode == 'console': print('Enter View Details to Move/Update')
+            cfg.table.add_row("", "", "Error", "Enter Job Details to Move/Update")
+            return False
 
         production_view_clean_up()
         return True
 
     except Exception as e:
-        print("Error in transfer_views: ", e)
+        cfg.table.add_row("Transfer Status", "Failed", str(e))
         return False
