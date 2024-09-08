@@ -33,11 +33,12 @@ def create_job(job_name, config_xml):
     """
     try:
         production_conn = cfg.production_conn
-        production_url = cfg.production_url
         production_conn.create_job(job_name, config_xml)
-        if cfg.mode == 'console': print(f"CREATED on Jenkins-Production JOB - {production_url}\t\t->\t{job_name}")
+        cfg.table.add_row(*["", job_name, 'Job', 'Success', 'Created'])
+
     except jenkins.JenkinsException as e:
         print(f"FAILED to Create Job. Error: {e}")
+        cfg.table.add_row(*["", job_name, 'Job', 'Failed', str(e)])
 
 
 def update_job(job_name, config_xml):
@@ -53,11 +54,10 @@ def update_job(job_name, config_xml):
     """
     try:
         production_conn = cfg.production_conn
-        production_url = cfg.production_url
         production_conn.reconfig_job(job_name, config_xml)
-        if cfg.mode == 'console': print(f"UPDATED on Jenkins-Production JOB - {production_url}\t\t->\t{job_name}")
+        cfg.table.add_row(*["", job_name, 'Job', 'Success', 'Updated'])
     except jenkins.JenkinsException as e:
-        print(f"FAILED to Create Job. Error: {e}")
+        cfg.table.add_row(*["", job_name, 'Job', 'Failed', str(e)])
 
 
 def delete_job(job_name):
@@ -72,11 +72,10 @@ def delete_job(job_name):
     """
     try:
         production_conn = cfg.production_conn
-        production_url = cfg.production_url
         production_conn.delete_job(job_name)
-        if cfg.mode == 'console': print(f"DELETED on Jenkins-Production JOB - {production_url}\t\t->\t{job_name}")
+        cfg.table.add_row(*["", job_name, 'Job', 'Success', 'Deleted'])
     except jenkins.JenkinsException as e:
-        print(f"FAILED to Delete Job. Error: {e}")
+        cfg.table.add_row(*["", job_name, 'Job', 'Failed', str(e)])
 
 
 def create_view(view_name, config_xml):
@@ -92,11 +91,10 @@ def create_view(view_name, config_xml):
     """
     try:
         production_conn = cfg.production_conn
-        production_url = cfg.production_url
         production_conn.create_view(view_name, config_xml)
-        if cfg.mode == 'console': print(f"CREATED on Jenkins-Production VIEW - {production_url}\t\t->\t{view_name}")
+        cfg.table.add_row(*["", view_name, 'View', 'Success', 'Created'])
     except jenkins.JenkinsException as e:
-        print(f"FAILED to Create View. Error: {e}")
+        cfg.table.add_row(*["", view_name, 'View', 'Failed', str(e)])
 
 
 def update_view(view_name, config_xml):
@@ -112,11 +110,10 @@ def update_view(view_name, config_xml):
     """
     try:
         production_conn = cfg.production_conn
-        production_url = cfg.production_url
         production_conn.reconfig_view(view_name, config_xml)
-        if cfg.mode == 'console': print(f"UPDATED on Jenkins-Production VIEW - {production_url}\t\t->\t{view_name}")
+        cfg.table.add_row(*["", view_name, 'View', 'Success', 'Updated'])
     except jenkins.JenkinsException as e:
-        print(f"FAILED to Update View. Error: {e}")
+        cfg.table.add_row(*["", view_name, 'View', 'Failed', str(e)])
 
 
 def delete_view(view_name):
@@ -131,11 +128,10 @@ def delete_view(view_name):
     """
     try:
         production_conn = cfg.production_conn
-        production_url = cfg.production_url
         production_conn.delete_view(view_name)
-        if cfg.mode == 'console': print(f"DELETED on Jenkins-Production VIEW - {production_url}\t\t->\t{view_name}")
+        cfg.table.add_row(*["", view_name, 'View', 'Success', 'Deleted'])
     except jenkins.JenkinsException as e:
-        print(f"FAILED to Delete View. Error: {e}")
+        cfg.table.add_row(*["", view_name, 'View', 'Failed', str(e)])
 
 
 def get_plugin_list(conn):
