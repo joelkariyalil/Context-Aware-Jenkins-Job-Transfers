@@ -26,12 +26,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"
 ]
-keywords = ["Jenkins", "CICD", "Jenkins-Transfer", "Servers", "TransferJobs", "Plugins"]
+keywords = ["Jenkins", "CICD", "Jenkins-Transfer", "Servers", "TransferJobs", "Plugins", "TransferViews", "Connect"]
 
 [tool.setuptools.packages.find]
 where = ["."]
 
 [project.urls]
-Repository = "https://github.com/pypa/sampleproject"
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Repository = "https://github.com/joelkariyalil/Jenkins-Transfers"
+Homepage = "https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/index.html"
+Issues = "https://github.com/joelkariyalil/Jenkins-Transfers/issues"
