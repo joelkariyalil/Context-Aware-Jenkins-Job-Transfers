@@ -6,7 +6,7 @@
 
 - **Transfer Job(s)**
 - **Transfer View(s)**
-- **Check for Plugin Dependencies** of Jobs/Views
+- **Check for Plugin Dependencies** of Jobs/Views   
 - **Clean Up Jenkins Servers**
 - **Visualize all functionalities** in a well-crafted terminal screen
 
