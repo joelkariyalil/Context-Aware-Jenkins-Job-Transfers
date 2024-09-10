@@ -1,36 +1,35 @@
-name: Publish Python Package to PyPI
+name: Publish Package
 
 on:
   push:
     tags:
-      - 'v*'  # Specify the branch that will trigger the workflow (change to your primary branch if it's different)
+      - 'v*'
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    
+    - uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        pip install build
 
     - name: Build the package
-      run: python setup.py sdist bdist_wheel
+      run: |
+        python -m build
 
     - name: Publish to PyPI
       env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: twine upload dist/*
-
-    - name: Clean up build files
-      run: rm -rf dist
+        PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        python -m pip install --upgrade twine
+        python -m twine upload --repository pypi dist/*
