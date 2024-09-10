@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Context-Aware-Jenkins-Job-Transfers"
-version = "1.0.0"
+version = "1.0.0b1"
 description = "Transfers Jobs b/w Jenkins Servers with relevant Views & Plugins"
 readme = "README.md"
 license = {text = "MIT License"}
