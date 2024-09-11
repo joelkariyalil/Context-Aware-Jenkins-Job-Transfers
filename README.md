@@ -27,6 +27,7 @@ For more details, check out the [**Supported Functionalities**](https://context-
     - [Clean Up Production](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/usage.html#clean-up-production)
     - [Clean Up Interim](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/usage.html#clean-up-interim)
     - [Set Console Size](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/usage.html#set-console-size)
+- [known Issues](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/knownIssues.html)
 - [Change Log](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/changeLog.html)
 - [Contributions](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/contribution.html)
 - [Apache License](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/license.html)
@@ -35,6 +36,10 @@ For more details, check out the [**Supported Functionalities**](https://context-
 - [Contact the Author](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/contact.html)
 - [Acknowledgements](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/acknowledgement.html)
 
+
+## Issue Tracking
+
+Kindly check out the [known Issues](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/knownIssues.html) to keep track of known Issues. If the Issue is NOT found, kindly create a new ID at the [Issues](https://github.com/joelkariyalil/Jenkins-Transfers/issues) page! 
 
 ## Contributors
 
