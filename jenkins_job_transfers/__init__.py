@@ -63,7 +63,7 @@ def connect(production_machine_url, interim_machine_url, production_username, in
         exit(1)
 
 
-def transfer(publish_list, ftype="job", mode="console", allowDuplicates=False):
+def transfer(publish_list, ftype="job", allowDuplicates=False, mode="console"):
     try:
 
         cfg.table = Table(show_lines=True, width=cfg.width)
@@ -105,7 +105,7 @@ def transfer(publish_list, ftype="job", mode="console", allowDuplicates=False):
         return False
 
 
-def check_publish_standards(publish_list, ftype="job", mode="console", allowDuplicates=False):
+def check_publish_standards(publish_list, ftype="job", allowDuplicates=False, mode="console"):
     try:
 
         cfg.table = Table(show_lines=True, width=cfg.width)
