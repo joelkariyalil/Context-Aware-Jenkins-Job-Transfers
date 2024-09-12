@@ -37,6 +37,20 @@ For more details, check out the [**Supported Functionalities**](https://context-
 - [Acknowledgements](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/acknowledgement.html)
 
 
+## Comparison with Other Jenkins Transfer Tools
+
+The current available methods of moving jobs among jenkins servers are described [here](https://medium.com/@rajinikanthvadla9/jenkins-moving-from-one-server-to-another-server-methods-39437733b1e0)
+
+| **Feature**                | **Context Aware Jenkins Job Transfers**                                                | **Other Jenkins Transfer Tools**                           |
+|----------------------------|----------------------------------------------------------------------------------------|------------------------------------------------------------|
+| **Job Transfer**            | Seamless transfer of jobs between Jenkins servers with associated views and plugins.    | Basic job transfer functionality; often lacks comprehensive job context. |
+| **View Transfer**           | Transfers views (all jobs in views) in a single operation.                                    | No support for transfering views |
+| **Plugin Dependency Check** | Automatically checks for plugin dependencies and resolves them during the transfer.     | Requires manual handling of plugin dependencies.            |
+| **Terminal Visualization**  | Full visualization of transfer steps in the terminal for better user interaction.       | Often lacks terminal-level feedback or logging.             |
+| **Python Integration**      | Written in Python for easy integration with other Python projects.                      | Often script-heavy or requires additional configuration files. |
+| **Scope for Workflows to be Built Pythonically**      | Written in Python for easy integration with other Python projects.                      | Often script-heavy or requires additional configuration files. |
+
+
 ## Issue Tracking
 
 Kindly check out the [known Issues](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/knownIssues.html) to keep track of known Issues. If the Issue is NOT found, kindly create a new ID at the [Issues](https://github.com/joelkariyalil/Jenkins-Transfers/issues) page! 
