@@ -3,7 +3,7 @@
 **Context Aware Jenkins Job Transfers** provides a pythonic way of transferring jobs between two Jenkins Servers. It is essentially a Python wrapper for the Jenkins REST API, allowing users to transfer jobs along with their associated views and plugins, resulting in a **Context Aware Jenkins Job Transfer**.
 
 [![GitHub release](https://img.shields.io/github/v/release/joelkariyalil/Jenkins-Transfers?logo=github&style=for-the-badge)](https://github.com/joelkariyalil/Context-Aware-Jenkins-Job-Transfers/releases)
-[[![Read the Docs](https://img.shields.io/readthedocs/context-aware-jenkins-transfers?style=for-the-badge)](https://pypi.org/project/Context-Aware-Jenkins-Job-Transfers/)](https://img.shields.io/readthedocs/context-aware-jenkins-transfers-documentation?style=for-the-badge)
+[[![Read the Docs](https://img.shields.io/readthedocs/context-aware-jenkins-transfers-documentation?style=for-the-badge)](https://pypi.org/project/Context-Aware-Jenkins-Job-Transfers/)]
 [![Contributors](https://img.shields.io/github/contributors/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/contributors.html)
 [![Issues](https://img.shields.io/github/issues/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://github.com/joelkariyalil/Context-Aware-Jenkins-Job-Transfers/issues)
 
