@@ -45,7 +45,7 @@ The current available methods of moving jobs among jenkins servers are described
 |----------------------------|----------------------------------------------------------------------------------------|------------------------------------------------------------|
 | **Job Transfer**            | Seamless transfer of jobs between Jenkins servers with associated views and plugins.    | Basic job transfer functionality; often lacks comprehensive job context. |
 | **View Transfer**           | Transfers views (all jobs in views) in a single operation.                                    | No support for transfering views |
-| **Plugin Dependency Check** | Automatically checks for plugin dependencies and resolves them during the transfer.     | Requires manual handling of plugin dependencies.            |
+| **Plugin Dependency Check** | Automatically checks for plugin dependencies and resolves them during the transfer.     | No support for checking plugin dependencies          |
 | **Terminal Visualization**  | Full visualization of transfer steps in the terminal for better user interaction.       | Often lacks terminal-level feedback or logging.             |
 | **Python Integration**      | Written in Python for easy integration with other Python projects.                      | Often script-heavy or requires additional configuration files. |
 | **Scope for Workflows to be Built Pythonically**      | Written in Python for easy integration with other Python projects.                      | Often script-heavy or requires additional configuration files. |
