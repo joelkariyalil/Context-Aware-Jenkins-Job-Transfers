@@ -7,11 +7,9 @@
 [![Contributors](https://img.shields.io/github/contributors/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/contributors.html)
 [![Issues](https://img.shields.io/github/issues/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://github.com/joelkariyalil/Context-Aware-Jenkins-Job-Transfers/issues)
 
----
-
 [![Downloads](https://pepy.tech/badge/context-aware-jenkins-job-transfers?style=for-the-badge)](https://pepy.tech/project/context-aware-jenkins-job-transfers)
 
----
+
 
 
 ## Overview of Capabilities
