@@ -5,8 +5,8 @@
 [![GitHub release](https://img.shields.io/github/v/release/joelkariyalil/Jenkins-Transfers?logo=github&style=for-the-badge)](https://github.com/joelkariyalil/Context-Aware-Jenkins-Job-Transfers/releases)
 [![Read the Docs](https://img.shields.io/readthedocs/context-aware-jenkins-transfers?style=for-the-badge)](https://pypi.org/project/Context-Aware-Jenkins-Job-Transfers/)
 [![Contributors](https://img.shields.io/github/contributors/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/contributors.html)
-[![Issues](https://img.shields.io/github/issues/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://github.com/joelkariyalil/Context-Aware-Jenkins-Job-Transfers/issues)
-[![Downloads](https://img.shields.io/pypi/dm/context-aware-jenkins-job-transfers?style=for-the-badge)](https://pypi.org/project/context-aware-jenkins-job-transfers/)
+[![Issues](https://img.shields.io/github/issues/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://github.com/joelkariyalil/Context-Aware-Jenkins-Job-[![Downloads](https://pepy.tech/badge/context-aware-jenkins-job-transfers)](https://pepy.tech/project/context-aware-jenkins-job-transfers)
+
 
 
 ## Overview of Capabilities
