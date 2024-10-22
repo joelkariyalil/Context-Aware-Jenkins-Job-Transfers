@@ -6,7 +6,7 @@
 [[![Read the Docs](https://img.shields.io/readthedocs/context-aware-jenkins-transfers-documentation?style=for-the-badge)](https://pypi.org/project/Context-Aware-Jenkins-Job-Transfers/)]
 [![Contributors](https://img.shields.io/github/contributors/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://context-aware-jenkins-transfers-documentation.readthedocs.io/en/latest/contributors.html)
 [![Issues](https://img.shields.io/github/issues/joelkariyalil/Jenkins-Transfers?style=for-the-badge)](https://github.com/joelkariyalil/Context-Aware-Jenkins-Job-Transfers/issues)
-[![Downloads](https://img.shields.io/badge/Downloads-1000-brightgreen?style=for-the-badge)](https://pypi.org/project/context-aware-jenkins-job-transfers/)
+[![Downloads](https://img.shields.io/badge/Downloads-5000-brightgreen?style=for-the-badge)](https://pypi.org/project/context-aware-jenkins-job-transfers/)
 
 
 
