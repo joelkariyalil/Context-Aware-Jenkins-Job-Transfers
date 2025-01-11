@@ -60,7 +60,7 @@ def connect(production_machine_url, interim_machine_url, production_username, in
     except Exception as e:
         cfg.table.add_row("Connection Status", "Connection Failed", str(e))
         cfg.console.print(cfg.table)
-        exit(1)
+        return False
 
 
 def transfer(publish_list, ftype="job", allowDuplicates=False, mode="console"):
