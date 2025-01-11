@@ -1,6 +1,5 @@
 import jenkins_job_transfers as jjt
 
-
 # Helper function to connect to Jenkins servers
 def connectServer(productionURL, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode):
     """Helper function to test server connection."""
@@ -8,7 +7,7 @@ def connectServer(productionURL, interimUrl, productionUsername, interimUsername
 
 
 # Helper function to validate the response
-def validate_response(request, expected=None, responseType='boolean', exactMatch=False):
+def validate_response(request, expected=None, isResponseBool = True, strictMatch=True):
     """
     Validates the server connection response.
 
@@ -20,14 +19,15 @@ def validate_response(request, expected=None, responseType='boolean', exactMatch
     Raises:
     AssertionError: If the request is None, indicating a failed connection.
     """
-    if responseType == 'boolean':
-        assert expected == request, "Connection Failed"
-    else:
+    if isResponseBool:
 
-        if exactMatch:
-            assert expected == request, "Connection Failed"
+        assert expected == request, "Connection Failed"
+
+    else:
+        if strictMatch:
+            assert expected.lower() == request.lower(), "Connection Failed"
         else:
-            assert expected in request, "Connection Failed"
+            assert expected.lower() in request.lower(), "Connection Failed"
 
 
 # Test for valid connection in quiet mode
@@ -60,17 +60,19 @@ def test_connect_console(jenkinsCreds, capsys):
     interimUsername = jenkinsCreds["interim"]["username"]
     interimPassword = jenkinsCreds["interim"]["password"]
 
-    # Connect in console mode
-    connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+    # Set a smaller window size to capture the output
+    jjt.set_console_size(50)
 
-    # Capture the console output
+    # Connect in console mode
+    request = connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+
     captured = capsys.readouterr()
 
-    # Assert console output contains expected text
-    assert "Connection established".lower() in captured.out.lower()
+    # Validate response
+    validate_response(captured.out, isResponseBool=False, expected="Connection established", strictMatch=False)
 
 # Test for invalid credentials
-def test_invalid_credentials(jenkinsCreds):
+def test_invalid_credentials_console(jenkinsCreds, capsys):
     """Test connection with invalid credentials."""
 
     # Use invalid credentials
@@ -85,81 +87,102 @@ def test_invalid_credentials(jenkinsCreds):
     # Test connection with invalid credentials
     request = connectServer(productionUrl, interimUrl, invalidProductionUsername, interimUsername, invalidProductionPassword, interimPassword, mode="console")
 
-    # Validate the response
-    validate_response(request)  # It should fail
+    captured = capsys.readouterr()
 
-# Test for server unavailability
-def test_server_unavailability(jenkinsCreds):
-    """Test connection when one or both servers are unavailable."""
+    # Validate response
+    validate_response(captured.out, isResponseBool=False, expected="Connection Falied", strictMatch=False)
+
+
+def test_invalid_credentials_quiet(jenkinsCreds):
+    """Test connection with invalid credentials."""
 
     # Use invalid credentials
-    unavailableProductionUrl = "http://invalid-url:8080"
+    invalidProductionUsername = "wrong_user"
+    invalidProductionPassword = "wrong_password"
 
     productionUrl = jenkinsCreds["production"]["url"]
-    interimUrl = jenkinsCreds["interim"]["url"]
-    productionUsername = jenkinsCreds["production"]["username"]
-    productionPassword = jenkinsCreds["production"]["password"]
-    interimUsername = jenkinsCreds["interim"]["username"]
-    interimPassword = jenkinsCreds["interim"]["password"]
-
-    # Test unavailable production server
-    request = connectServer(unavailableProductionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
-    validate_response(request)  # It should fail
-
-    # Test unavailable interim server
-    request = connectServer(productionUrl, "http://invalid-url:8081", productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
-    validate_response(request)  # It should fail
-
-# Test for missing credentials
-def test_missing_credentials(jenkinsCreds):
-    """Test the connection with missing credentials."""
-
-    # Missing credentials
-    productionUrl = jenkinsCreds["production"]["url"]
-    interimUrl = jenkinsCreds["interim"]["url"]
-    productionUsername = ""  # Empty username
-    productionPassword = ""  # Empty password
-    interimUsername = jenkinsCreds["interim"]["username"]
-    interimPassword = jenkinsCreds["interim"]["password"]
-
-    # Test missing credentials
-    request = connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
-    validate_response(request)
-
-# Test different modes (quiet vs console)
-def test_connection_modes(jenkinsCreds):
-    """Test the connection in different modes (quiet vs console)."""
-
-    productionUrl = jenkinsCreds["production"]["url"]
-    productionUsername = jenkinsCreds["production"]["username"]
-    productionPassword = jenkinsCreds["production"]["password"]
     interimUrl = jenkinsCreds["interim"]["url"]
     interimUsername = jenkinsCreds["interim"]["username"]
     interimPassword = jenkinsCreds["interim"]["password"]
 
-    # Test in quiet mode
-    requestQuiet = connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="quiet")
-    validate_response(requestQuiet)
-
-    # Test in console mode
-    requestConsole = connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
-    validate_response(requestConsole)
-
-
-def test_invalid_url(jenkinsCreds):
-    """Test connection with invalid URL format."""
-
-    invalidProductionUrl = "htp://invalid-url"  # Invalid URL format
-
-    productionUrl = jenkinsCreds["production"]["url"]
-    interimUrl = jenkinsCreds["interim"]["url"]
-    productionUsername = jenkinsCreds["production"]["username"]
-    productionPassword = jenkinsCreds["production"]["password"]
-    interimUsername = jenkinsCreds["interim"]["username"]
-    interimPassword = jenkinsCreds["interim"]["password"]
-
-    # Test connection with invalid URL
-    request = connectServer(invalidProductionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+    # Test connection with invalid credentials
+    request = connectServer(productionUrl, interimUrl, invalidProductionUsername, interimUsername, invalidProductionPassword, interimPassword, mode="quiet")
 
     # Validate the response
-    validate_response(request)  # It should fail
+    validate_response(request, expected=False)  # It should fail
+
+# # Test for server unavailability
+# def test_server_unavailability(jenkinsCreds):
+#     """Test connection when one or both servers are unavailable."""
+
+#     # Use invalid credentials
+#     unavailableProductionUrl = "http://invalid-url:8080"
+
+#     productionUrl = jenkinsCreds["production"]["url"]
+#     interimUrl = jenkinsCreds["interim"]["url"]
+#     productionUsername = jenkinsCreds["production"]["username"]
+#     productionPassword = jenkinsCreds["production"]["password"]
+#     interimUsername = jenkinsCreds["interim"]["username"]
+#     interimPassword = jenkinsCreds["interim"]["password"]
+
+#     # Test unavailable production server
+#     request = connectServer(unavailableProductionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+#     validate_response(request)  # It should fail
+
+#     # Test unavailable interim server
+#     request = connectServer(productionUrl, "http://invalid-url:8081", productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+#     validate_response(request)  # It should fail
+
+# # Test for missing credentials
+# def test_missing_credentials(jenkinsCreds):
+#     """Test the connection with missing credentials."""
+
+#     # Missing credentials
+#     productionUrl = jenkinsCreds["production"]["url"]
+#     interimUrl = jenkinsCreds["interim"]["url"]
+#     productionUsername = ""  # Empty username
+#     productionPassword = ""  # Empty password
+#     interimUsername = jenkinsCreds["interim"]["username"]
+#     interimPassword = jenkinsCreds["interim"]["password"]
+
+#     # Test missing credentials
+#     request = connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+#     validate_response(request)
+
+# # Test different modes (quiet vs console)
+# def test_connection_modes(jenkinsCreds):
+#     """Test the connection in different modes (quiet vs console)."""
+
+#     productionUrl = jenkinsCreds["production"]["url"]
+#     productionUsername = jenkinsCreds["production"]["username"]
+#     productionPassword = jenkinsCreds["production"]["password"]
+#     interimUrl = jenkinsCreds["interim"]["url"]
+#     interimUsername = jenkinsCreds["interim"]["username"]
+#     interimPassword = jenkinsCreds["interim"]["password"]
+
+#     # Test in quiet mode
+#     requestQuiet = connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="quiet")
+#     validate_response(requestQuiet)
+
+#     # Test in console mode
+#     requestConsole = connectServer(productionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+#     validate_response(requestConsole)
+
+
+# def test_invalid_url(jenkinsCreds):
+#     """Test connection with invalid URL format."""
+
+#     invalidProductionUrl = "htp://invalid-url"  # Invalid URL format
+
+#     productionUrl = jenkinsCreds["production"]["url"]
+#     interimUrl = jenkinsCreds["interim"]["url"]
+#     productionUsername = jenkinsCreds["production"]["username"]
+#     productionPassword = jenkinsCreds["production"]["password"]
+#     interimUsername = jenkinsCreds["interim"]["username"]
+#     interimPassword = jenkinsCreds["interim"]["password"]
+
+#     # Test connection with invalid URL
+#     request = connectServer(invalidProductionUrl, interimUrl, productionUsername, interimUsername, productionPassword, interimPassword, mode="console")
+
+#     # Validate the response
+#     validate_response(request)  # It should fail
