@@ -1,67 +1,105 @@
 import jenkins_job_transfers as jjt
 import jenkins
 from importlib.resources import files
+import logging
 
-def loadJobInServer(jenkinsCreds, server):
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def loadJobInServers(jenkinsCreds, fileName):
     try:
-        # Extract credentials for the specified server
-        URL = jenkinsCreds[server]["url"]
-        Username = jenkinsCreds[server]["username"]
-        Password = jenkinsCreds[server]["password"]
+        # Extract credentials for the servers
+        interimCreds = jenkinsCreds["interim"]
+        productionCreds = jenkinsCreds["production"]
 
-        # Connect to Jenkins server
-        global conn
-        conn = jenkins.Jenkins(URL, username=Username, password=Password)
+        # Connect to Jenkins servers
+        interimConn = jenkins.Jenkins(interimCreds["url"], username=interimCreds["username"], password=interimCreds["password"])
+        productionConn = jenkins.Jenkins(productionCreds["url"], username=productionCreds["username"], password=productionCreds["password"])
 
-        # Resolve paths to XML files using importlib.resources
-        job1_path = files("jenkins_job_transfers.tests.assets.xmlFilesForJobs").joinpath("jobWithNoPluginsNoViews.xml")
-        job2_path = files("jenkins_job_transfers.tests.assets.xmlFilesForJobs").joinpath("jobWithPluginsNoViews.xml")
+        # Resolve path to XML file
+        jobPath = files("jenkins_job_transfers.tests.assets.xmlFilesForJobs").joinpath(fileName)
 
-        # Create jobs using the XML files
-        with job1_path.open("r") as file1:
-            conn.create_job("Job in Test With No Plugins No Views", file1.read())
+        # Create jobs in both servers
+        jobName = fileName.split(".")[0]
+        with jobPath.open("r") as xmlFile:
+            if interimConn.job_exists(jobName):
+                interimConn.delete_job(jobName)
+            interimConn.create_job(jobName, xmlFile.read())
 
-        with job2_path.open("r") as file2:
-            conn.create_job("Job in Test With Plugins No Views", file2.read())
+            if productionConn.job_exists(jobName):
+                productionConn.delete_job(jobName)
+            productionConn.create_job(jobName, xmlFile.read())
 
-        return True  # Indicate success
+        return interimConn, productionConn
 
     except Exception as e:
-        print(f"Error in loadJobInServer: {e}")
-        return False  # Indicate failure
+        logger.error(f"Error in loadJobInServers: {e}")
+        print(f"Error in loadJobInServers: {e}")
+        return None, None  # Return None to indicate failure
+
 
 def connectServers(jenkinsCreds):
     try:
-        # Extract credentials for both production and interim servers
-        productionURL = jenkinsCreds["production"]["url"]
-        interimURL = jenkinsCreds["interim"]["url"]
-        productionUsername = jenkinsCreds["production"]["username"]
-        interimUsername = jenkinsCreds["interim"]["username"]
-        productionPassword = jenkinsCreds["production"]["password"]
-        interimPassword = jenkinsCreds["interim"]["password"]
+        # Extract credentials
+        productionCreds = jenkinsCreds["production"]
+        interimCreds = jenkinsCreds["interim"]
 
-        # Use jenkins_job_transfers to connect the servers
-        jjt.connect(productionURL, interimURL, productionUsername, interimUsername, productionPassword, interimPassword)
-
-        return True  # Indicate success
+        # Connect servers using jenkins_job_transfers
+        jjt.connect(
+            productionCreds["url"],
+            interimCreds["url"],
+            productionCreds["username"],
+            interimCreds["username"],
+            productionCreds["password"],
+            interimCreds["password"]
+        )
+        return True
 
     except Exception as e:
-        print(f"Error in connectServers: {e}")
-        return False  # Indicate failure
+        logger.error(f"Error in connectServers: {e}")
+        return False
 
-def test_check_plugin_dependencies_quiet(jenkinsCreds):
-    # Step 1: Load jobs into the interim server
-    chk = loadJobInServer(jenkinsCreds, "interim")
-    assert chk, "Failed to Create Job in Interim Server"
 
-    # Step 2: Connect production and interim servers
-    result = connectServers(jenkinsCreds)
-    assert result, "Failed to connect to Jenkins servers"
+# Negative Test Case
+def test_check_plugin_dependencies_quiet_negative(jenkinsCreds):
+    interimConn, productionConn = None, None
+    try:
+        # Load jobs
+        interimConn, productionConn = loadJobInServers(jenkinsCreds, "jobWithNoPluginsNoViews.xml")
+        assert interimConn and productionConn, "Failed to create jobs in servers"
 
-    # Step 3: Check plugin dependencies for a specific job
-    result = jjt.check_plugin_dependencies("Job in Test With No Plugins No Views", ftype="job", mode="quiet")
-    conn.delete_job("Job in Test With No Plugins No Views")
-    conn.delete_job("Job in Test With Plugins No Views")
-    assert result, "Failed to check plugin dependencies for Job in Test With No Plugins No Views"
+        # Connect servers
+        assert connectServers(jenkinsCreds), "Failed to connect Jenkins servers"
 
-    
+        # Check dependencies
+        result = jjt.check_plugin_dependencies("jobWithNoPluginsNoViews", ftype="job", mode="quiet")
+        assert len(result) == 0, "Negative test failed: unexpected plugins detected"
+    finally:
+        # Cleanup jobs
+        if interimConn:
+            interimConn.delete_job("jobWithNoPluginsNoViews")
+        if productionConn:
+            productionConn.delete_job("jobWithNoPluginsNoViews")
+
+
+# Positive Test Case
+def test_check_plugin_dependencies_quiet_positive(jenkinsCreds):
+    interimConn, productionConn = None, None
+    try:
+        # Load jobs
+        interimConn, productionConn = loadJobInServers(jenkinsCreds, "jobWithPluginsNoViews.xml")
+        assert interimConn and productionConn, "Failed to create jobs in servers"
+
+        # Connect servers
+        assert connectServers(jenkinsCreds), "Failed to connect Jenkins servers"
+
+        # Check dependencies
+        result = jjt.check_plugin_dependencies("jobWithPluginsNoViews", ftype="job", mode="quiet")
+        assert len(result) != 0, "Positive test failed: plugins not detected"
+    finally:
+        # Cleanup jobs
+        if interimConn:
+            interimConn.delete_job("jobWithPluginsNoViews")
+        if productionConn:
+            productionConn.delete_job("jobWithPluginsNoViews")
