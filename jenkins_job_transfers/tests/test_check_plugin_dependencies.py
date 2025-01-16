@@ -2,8 +2,8 @@ import jenkins_job_transfers as jjt
 import jenkins
 from importlib.resources import files
 import logging
+import pytest
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -62,6 +62,7 @@ def connectServers(jenkinsCreds):
 
 
 # Negative Test Case
+@pytest.mark.dependency(depends=["test_servers.test_servers_alive"])
 def test_check_plugin_dependencies_quiet_negative(jenkinsCreds):
     interimConn, productionConn = None, None
     try:
@@ -84,6 +85,7 @@ def test_check_plugin_dependencies_quiet_negative(jenkinsCreds):
 
 
 # Positive Test Case
+@pytest.mark.dependency(depends=["test_servers.test_servers_alive"])
 def test_check_plugin_dependencies_quiet_positive(jenkinsCreds):
     interimConn, productionConn = None, None
     try:
