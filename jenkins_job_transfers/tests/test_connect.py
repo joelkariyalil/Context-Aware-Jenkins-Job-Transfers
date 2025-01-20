@@ -1,6 +1,7 @@
 import jenkins_job_transfers as jjt
 import pytest
 import logging
+from . import config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -83,14 +84,8 @@ def connectServers(jenkinsCreds, mode, capsys=None, invalid=False):
         mode=mode,
     )
 
-    with open("debug.txt", "w") as f:
-        f.write(str(request))
-
     if mode == "console" and capsys:
         captured = capsys.readouterr()
-        with open("debug.txt", "a", encoding="utf-8") as f:
-                f.write("\n")
-                f.write(str(captured.out))
         validate_response(
             captured.out,
             isResponseBool=False,
@@ -109,22 +104,24 @@ def connectServers(jenkinsCreds, mode, capsys=None, invalid=False):
 
 # Test Cases
 
-@pytest.mark.dependency(depends=["test_servers.test_servers_alive"])
 def test_connect_quiet(jenkinsCreds):
     """Test valid connection in quiet mode."""
+    if not config.chkEchServerConnected: pytest.skip(" Jenkins Servers Not Connected")
     connectServers(jenkinsCreds, mode="quiet")
 
-@pytest.mark.dependency(depends=["test_servers.test_servers_alive"])
 def test_connect_console(jenkinsCreds, capsys):
     """Test valid connection in console mode."""
+    if not config.chkEchServerConnected: pytest.skip("Jenkins Servers Not Connected")
     connectServers(jenkinsCreds, mode="console", capsys=capsys)
 
-@pytest.mark.dependency(depends=["test_servers.test_servers_alive"])
+
 def test_invalid_credentials_quiet(jenkinsCreds):
     """Test invalid credentials in quiet mode."""
+    if not config.chkEchServerConnected: pytest.skip("Jenkins Servers Not Connected")
     connectServers(jenkinsCreds, mode="quiet", invalid=True)
 
-@pytest.mark.dependency(depends=["test_servers.test_servers_alive"])
+
 def test_invalid_credentials_console(jenkinsCreds, capsys):
     """Test invalid credentials in console mode."""
+    if not config.chkEchServerConnected: pytest.skip("Jenkins Servers Not Connected")
     connectServers(jenkinsCreds, mode="console", capsys=capsys, invalid=True)

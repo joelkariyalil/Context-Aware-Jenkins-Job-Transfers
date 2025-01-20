@@ -2,14 +2,15 @@ import jenkins
 import jenkins_job_transfers as jjt
 import logging
 import pytest
+from . import config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 @pytest.mark.order(1)
-@pytest.mark.dependency()
 def test_servers_alive(jenkinsCreds):
+
     try:
 
         # Extract all the details for the servers
@@ -20,8 +21,11 @@ def test_servers_alive(jenkinsCreds):
         productionConn = jenkins.Jenkins(productionCreds["url"], username=productionCreds["username"], password=productionCreds["password"])
         interimConn = jenkins.Jenkins(interimCreds["url"], username=interimCreds["username"], password=interimCreds["password"])
 
-        assert productionConn.get_info(), "Failed to connect to Production server"
-        assert interimConn.get_info(), "Failed to connect to Interim server"
+        if productionConn.get_info() and interimConn.get_info(): config.chkEchServerConnected = True
+        else: pytest.fail("Failed to Connect to Jenkins servers", pytrace=False)
+
+        assert productionConn.get_version(), "Failed to connect to Production server"
+        assert interimConn, "Failed to connect to Interim server"
             
     except Exception as e:
-        pytest.fail(f"Error in test_servers_alive: {e}")
+        pytest.fail(f"Failed to Connect to Jenkins Servers", pytrace=False)
