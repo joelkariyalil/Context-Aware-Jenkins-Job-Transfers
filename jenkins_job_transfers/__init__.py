@@ -237,14 +237,14 @@ def check_plugin_dependencies(publish_list, ftype="job", mode="console"):
             raise TypeError("Invalid Mode Field! Mode = [console, quiet]")
 
         if ftype == "job":
-            res = {}
+            job_plugins = {}
             for job in publish_list:
                 cfg.table.add_row("Job", job)
-                res[job] = jbm.check_job_plugins_in_production_without_install(job)
+                job_plugins[job] = jbm.check_job_plugins_in_production_without_install(job)
                 cfg.table.add_row()
 
             if mode == 'console': cfg.console.print(cfg.table)
-            return res
+            return job_plugins
 
         elif ftype == "view":
 
