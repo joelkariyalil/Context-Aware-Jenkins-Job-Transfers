@@ -68,7 +68,7 @@ def test_check_plugin_dependencies_quiet_negative(jenkinsCreds):
 
         # Check dependencies
         result = jjt.check_plugin_dependencies([jobName], ftype="job", mode="quiet")
-        assert result, "Negative Test Failed. Non-Job Specific Plugins Detected"
+        assert len(result[jobName])==0, "Negative Test Failed. Non-Job Specific Plugins Detected"
     finally:
         for conn in [interimConn, productionConn]:
             if conn:
@@ -105,7 +105,7 @@ def test_check_plugin_dependencies_quiet_positive(jenkinsCreds):
 
         # Check dependencies
         result = jjt.check_plugin_dependencies([jobName], ftype="job", mode="quiet")
-        assert not result, "Positive Test Failed: Plugins Not Detected"
+        assert len(result[jobName])!=0, "Positive Test Failed: Plugins Not Detected"
     finally:
         for conn in [interimConn, productionConn]:
             if conn:
@@ -156,3 +156,40 @@ def test_check_plugin_dependencies_console_negative(jenkinsCreds, capsys):
 
 # Positive Test Case in the Console Mode
 
+
+def test_check_plugin_dependencies_console_positive(jenkinsCreds, capsys):
+
+    if not config.chkEchServerConnected: pytest.skip("Jenkins Servers Not Connected")
+
+    interimConn, productionConn = None, None
+
+    try: 
+
+        jobName = "Test Plugin Dependency - Console"
+
+        interimConn, productionConn = loadJobInServers(jenkinsCreds, jobName=jobName, fileNameForInterim="jobWithPluginsNoViews.xml", fileNameForProduction="jobWithNoPluginsNoViews.xml")
+
+        # Extract credentials
+        productionCreds = jenkinsCreds["production"]
+        interimCreds = jenkinsCreds["interim"]
+
+        jjt.set_console_size(100)
+
+        assert jjt.connect(
+            productionCreds["url"],
+            interimCreds["url"],
+            productionCreds["username"],
+            interimCreds["username"],
+            productionCreds["password"],
+            interimCreds["password"]
+        ), "Failed to Connect to Servers"
+
+
+        # Check dependencies
+        result = jjt.check_plugin_dependencies([jobName], ftype="job", mode="console")
+        assert result and "Failed".lower() in capsys.readouterr().out.lower(), "Positive Test Failed: Plugins Not Detected"
+    finally:
+        for conn in [interimConn, productionConn]:
+            if conn:
+                if conn.job_exists(jobName):
+                    conn.delete_job(jobName)

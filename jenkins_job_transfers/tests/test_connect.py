@@ -20,15 +20,15 @@ def validate_response(request, expected=None, isResponseBool=True, strictMatch=T
     Raises:
     AssertionError: If the request validation fails.
     """
-    assert request is not None, "Validation failed: Response is None."
+    assert request is not None, "Validation Failed: Response is None."
 
     if isResponseBool:
-        assert request == expected, "Validation failed: Connection unsuccessful."
+        assert request == expected, "Validation Failed: Connection unsuccessful."
     else:
         if strictMatch:
-            assert expected.lower() == request.lower(), "Validation failed: Exact match not found."
+            assert expected.lower() == request.lower(), "Validation Failed: Exact match not found."
         else:
-            assert expected.lower() in request.lower(), "Validation failed: Partial match not found."
+            assert expected.lower() in request.lower(), "Validation Failed: Partial match not found."
 
 
 def get_credentials(jenkinsCreds, env):
