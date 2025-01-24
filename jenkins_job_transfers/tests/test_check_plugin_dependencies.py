@@ -51,7 +51,7 @@ def test_check_plugin_dependencies_quiet_negative(jenkinsCreds):
 
         jobName = "Test Plugin Dependency - Quiet"
         # Load jobs
-        interimConn, productionConn = loadJobInServers(jenkinsCreds, jobName=jobName, fileNameForInterim="jobWithPluginsNoViews.xml", fileNameForProduction="jobWithPluginsNoViews.xml")
+        interimConn, productionConn = loadJobInServers(jenkinsCreds, jobName=jobName, fileNameForInterim="jobWithNoPluginsNoViews.xml", fileNameForProduction="jobWithNoPluginsNoViews.xml")
 
         # Extract credentials
         productionCreds = jenkinsCreds["production"]
@@ -187,7 +187,11 @@ def test_check_plugin_dependencies_console_positive(jenkinsCreds, capsys):
 
         # Check dependencies
         result = jjt.check_plugin_dependencies([jobName], ftype="job", mode="console")
-        assert result and "Failed".lower() in capsys.readouterr().out.lower(), "Positive Test Failed: Plugins Not Detected"
+
+        captured = capsys.readouterr().out
+        
+        assert len(result[jobName])!=0 and "Plugins to be Installed".lower() in captured.lower(), "Positive Test Failed: Plugins Not Detected"
+
     finally:
         for conn in [interimConn, productionConn]:
             if conn:
