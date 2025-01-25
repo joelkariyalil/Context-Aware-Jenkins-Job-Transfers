@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.order(1)
 def test_servers_alive(jenkinsCreds):
 
+    productionConn, interimConn = None, None
     try:
 
         # Extract all the details for the servers
@@ -28,4 +29,10 @@ def test_servers_alive(jenkinsCreds):
         assert interimConn, "Failed to connect to Interim server"
             
     except Exception as e:
+        logger.error("Exception in test_servers_alive: %s", e)
         pytest.fail(f"Failed to Connect to Jenkins Servers", pytrace=False)
+
+    finally:
+        # Storing the Connection for later tests.
+        config.productionConn = productionConn
+        config.interimConn = interimConn

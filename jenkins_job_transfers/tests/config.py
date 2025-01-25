@@ -1,3 +1,3 @@
-# Shared Variables across the test modules
-
-chkEchServerConnected = False
+# Sharing Connection Credentials across test modules
+productionConn = None
+interimConn = None
