@@ -51,7 +51,6 @@ def loadJobInInterimServer(jobName=None, jobFileNameForInterim=None):
     
 
 def loadViewInInterimServer(viewName=None, viewFileNameForInterim=None, jobFileNamesForViewInInterim=None):
-
     jobNames = []
 
     try:
@@ -68,17 +67,18 @@ def loadViewInInterimServer(viewName=None, viewFileNameForInterim=None, jobFileN
             root = etree.fromstring(xmlFile)
             jobNames = root.xpath("//jobNames/string")
             if not interimConn.view_exists(viewName):
-                interimConn.create_view(viewName, xmlFile.read())
+                interimConn.create_view(viewName, xmlFile)
 
             jobCount = 0
 
             for jobName in jobNames:
-                if not interimConn.job_exists(jobName.text):
+                if not interimConn.job_exists(jobName):
 
                     # Load job in interim server
                     jobPathInterim = files("jenkins_job_transfers.tests.assets.xmlFilesForJobs").joinpath(jobFileNamesForViewInInterim[jobCount])
                     with open (jobPathInterim, "r") as xmlFile:
-                        interimConn.create_job(jobName, xmlFile.read())
+                        if not interimConn.job_exists(jobName):
+                            interimConn.create_job(jobName, xmlFile)
 
                     jobCount += 1
                     
@@ -92,8 +92,6 @@ def test_transfer_job_with_plugins_no_views_quiet():
 
     jobName = "Transfer Job with Plugins and No Views - Quiet"
 
-    pluginPresentInInterim = bMod.get_job_specific_plugins("jobWithPluginsNoViews.xml")
-
     try:
     
         if not config.interimConn or not config.productionConn: pytest.skip("Jenkins Servers Not Connected")
@@ -102,8 +100,6 @@ def test_transfer_job_with_plugins_no_views_quiet():
             pytest.fail("Failed to Load Jobs in Interim Server")
         
         jjt.transfer([jobName], "job", allowDuplicates=False, mode="quiet")
-
-        pluginsPresentInProduction = bMod.get_job_specific_plugins()
 
         assert config.productionConn.job_exists(jobName), "Job not transferred to production server"
 
