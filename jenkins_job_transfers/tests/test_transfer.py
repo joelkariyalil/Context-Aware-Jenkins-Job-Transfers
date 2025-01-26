@@ -53,40 +53,35 @@ def loadJobInInterimServer(jobName=None, jobFileNameForInterim=None):
 def loadViewInInterimServer(viewName=None, viewFileNameForInterim=None, jobFileNamesForViewInInterim=None):
     jobNames = []
 
-    try:
+    
 
-        if not config.interimConn or not config.productionConn: pytest.skip("Jenkins Servers Not Connected")
+    if not config.interimConn:
+        pytest.skip("Jenkins Interim Server Not Connected")
 
-        interimConn = config.interimConn
+    interimConn = config.interimConn
 
-        # Resolve path to XML file
-        viewPathInterim = files("jenkins_job_transfers.tests.assets.xmlFilesForViews").joinpath(viewFileNameForInterim)
+    viewPathInterim = files("jenkins_job_transfers.tests.assets.xmlFilesForViews").joinpath(viewFileNameForInterim)
 
-        # Load view in interim server
-        with open (viewPathInterim, "r") as xmlFile:
-            root = etree.fromstring(xmlFile)
-            jobNames = root.xpath("//jobNames/string")
-            if not interimConn.view_exists(viewName):
-                interimConn.create_view(viewName, xmlFile)
+    with open(viewPathInterim, "rb") as xmlFile:
+        xmlContent = xmlFile.read()
+        root = etree.fromstring(xmlContent)
+        jobNames = root.xpath("//jobNames/string")
 
-            jobCount = 0
+        if not interimConn.view_exists(viewName):
+            interimConn.create_view(viewName, xmlContent.decode())
+        jobCount = 0
+        for jobName in jobNames:
+            if not interimConn.job_exists(jobName):
+                # Load job in interim server
+                jobPathInterim = files("jenkins_job_transfers.tests.assets.xmlFilesForJobs").joinpath(
+                    jobFileNamesForViewInInterim[jobCount]
+                )
+                with open(jobPathInterim, "rb") as jobXmlFile:
+                    interimConn.create_job(jobName, jobXmlFile.read())
+                jobCount += 1
 
-            for jobName in jobNames:
-                if not interimConn.job_exists(jobName):
+    return True, jobNames
 
-                    # Load job in interim server
-                    jobPathInterim = files("jenkins_job_transfers.tests.assets.xmlFilesForJobs").joinpath(jobFileNamesForViewInInterim[jobCount])
-                    with open (jobPathInterim, "r") as xmlFile:
-                        if not interimConn.job_exists(jobName):
-                            interimConn.create_job(jobName, xmlFile)
-
-                    jobCount += 1
-                    
-        return True, jobNames
-
-    except Exception as e:
-        logger.error("Exception in loadViewInInterimServer: %s", e)
-        return False, jobNames
 
 def test_transfer_job_with_plugins_no_views_quiet():
 
@@ -162,7 +157,7 @@ def test_transfer_job_with_plugins_with_views():
                     conn.delete_job(jobName)
         
 
-    
+
 def test_transfer_views():
 
     viewName = "Transfer View - Quiet"
