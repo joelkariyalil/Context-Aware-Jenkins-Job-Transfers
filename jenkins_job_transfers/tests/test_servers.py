@@ -33,6 +33,5 @@ def test_servers_alive(jenkinsCreds):
         pytest.fail(f"Failed to Connect to Jenkins Servers", pytrace=False)
 
     finally:
-        # Storing the Connection for later tests.
         config.productionConn = productionConn
         config.interimConn = interimConn
