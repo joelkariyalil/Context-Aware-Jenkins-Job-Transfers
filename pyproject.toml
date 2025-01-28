@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Context-Aware-Jenkins-Job-Transfers"
-version = "1.1.0b"
+version = "1.1.0b1"
 description = "Transfers Jobs b/w Jenkins Servers with relevant Views & Plugins. Transfers views with assosiated jobs and plugins in a Single Function Call."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -30,8 +30,15 @@ classifiers = [
 ]
 keywords = ["Jenkins", "CICD", "Jenkins-Transfer", "Servers", "TransferJobs", "Plugins", "TransferViews", "Connect"]
 
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"jenkins_job_transfers.tests" = ["assets/**/*"]
+
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["jenkins_job_transfers", "jenkins_job_transfers.tests"]
 
 [project.urls]
 Repository = "https://github.com/joelkariyalil/Jenkins-Transfers"
