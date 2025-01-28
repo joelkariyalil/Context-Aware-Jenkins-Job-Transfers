@@ -217,7 +217,7 @@ def check_plugin_dependencies(publish_list, ftype="job", mode="console"):
     try:
 
         cfg.table = Table(show_lines=True, width=cfg.width)
-        cfg.table.add_column("Check Publish Standards (w/o Install)", style="cyan", no_wrap=True)
+        cfg.table.add_column("Check Plugin Dependencies (w/o Install)", style="cyan", no_wrap=True)
 
         production_conn = cfg.production_conn
         interim_conn = cfg.interim_conn

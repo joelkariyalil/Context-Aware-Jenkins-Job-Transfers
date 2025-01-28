@@ -97,7 +97,14 @@ def check_job_plugins_in_production(job):
         plugins_to_install_production = plugin_differences()
 
         config_xml = jutils.get_config_xml(interim_conn, job)
+
         cfg.table.add_row("Plugin Check", job, "Plugin Information")
+
+        # Check if the Job is Present in the Interim Server
+        if not config_xml:
+            cfg.table.add_row("", "FAILED", "Job Not Present in Interim Server")
+            return False
+        
         job_specific_plugins = get_job_specific_plugins(
             config_xml)  # returns a list of jobs required for a particular job in interim
         plugins_to_install = list(set(plugins_to_install_production) & set(job_specific_plugins))
@@ -107,7 +114,7 @@ def check_job_plugins_in_production(job):
                 cfg.table.add_row("", "SUCCESS", "Install Initiated")
                 return True
             else:
-                cfg.table.add_row("", "Success", "Restart Production Server")
+                cfg.table.add_row("", "SUCCESS", "Restart Production Server")
                 return False
         else:
             cfg.table.add_row("", "SUCCESS", "All Plugins Installed")
