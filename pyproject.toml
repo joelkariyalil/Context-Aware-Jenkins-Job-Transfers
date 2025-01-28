@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Context-Aware-Jenkins-Job-Transfers"
-version = "1.0.3"
-description = "Transfers Jobs b/w Jenkins Servers with relevant Views & Plugins"
+version = "1.1.0b"
+description = "Transfers Jobs b/w Jenkins Servers with relevant Views & Plugins. Transfers views with assosiated jobs and plugins in a Single Function Call."
 readme = "README.md"
-license = {text = "MIT License"}
+license = {file = "LICENSE"}
 authors = [
     {name = "Joel Thomas Chacko", email = "joeltc071@gmail.com"}
 ]
@@ -19,13 +19,13 @@ dependencies = [
     "python-jenkins==1.8.2",
     "lxml==5.1.0",
     "rich==13.7.1",
-    "pytest",
-    "pytest-order"
+    "pytest==8.3.4",
+    "pytest-order==1.3.0"
 ]
 requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent"
 ]
 keywords = ["Jenkins", "CICD", "Jenkins-Transfer", "Servers", "TransferJobs", "Plugins", "TransferViews", "Connect"]
