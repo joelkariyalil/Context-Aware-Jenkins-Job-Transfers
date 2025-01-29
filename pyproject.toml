@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Context-Aware-Jenkins-Job-Transfers"
-version = "1.1.0b2"
+version = "1.1.0"
 description = "Transfers Jobs b/w Jenkins Servers with relevant Views & Plugins. Transfers views with assosiated jobs and plugins in a Single Function Call."
 readme = "README.md"
 license = {file = "LICENSE"}
