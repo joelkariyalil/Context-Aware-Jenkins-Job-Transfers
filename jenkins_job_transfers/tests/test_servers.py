@@ -7,10 +7,18 @@ from . import config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-@pytest.mark.order(1)
 def test_servers_alive(jenkinsCreds):
+    """
+    Test to check if Jenkins servers are alive and if they are connected using the given credentials.
 
+    Connects to both the production and interim servers using the Jenkins python library, and checks if the servers are alive and connected using the given credentials. If the connection fails, the test fails.
+
+    :param jenkinsCreds: A dictionary containing the credentials for both the production and interim servers.
+    :type jenkinsCreds: dict
+
+    :return: None
+    :rtype: None
+    """
     productionConn, interimConn = None, None
     try:
 
