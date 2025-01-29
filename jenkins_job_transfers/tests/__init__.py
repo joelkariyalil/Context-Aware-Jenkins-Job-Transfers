@@ -13,4 +13,3 @@ Functions to Test
 mode = "console" or "quiet"
 
 '''
-

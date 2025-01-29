@@ -111,7 +111,17 @@ def loadViewInProductionServer(viewName=None, viewFileNameForProduction=None, jo
         return False, job_names
 
 def test_production_cleanup():
+    """
+    Test case for production cleanup process.
 
+    This test performs the following steps:
+    1. Loads a view in the production server using specified XML configuration files.
+    2. Deletes the jobs associated with the loaded view.
+    3. Executes the production cleanup function to remove views with no associated jobs.
+    4. Asserts that the view is successfully deleted from the production server.
+
+    If Jenkins servers are not connected, the test is skipped.
+    """
     viewName = "Production Cleanup View"    
     jobNames = []
 

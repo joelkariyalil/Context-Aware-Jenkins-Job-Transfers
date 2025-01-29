@@ -186,8 +186,6 @@ def test_check_plugin_dependencies_console_negative(jenkinsCreds, capsys):
 
 
 # Positive Test Case in the Console Mode
-
-
 def test_check_plugin_dependencies_console_positive(jenkinsCreds, capsys):
 
     """

@@ -18,6 +18,17 @@ Interim Cleanup is basically required for places where the jobs have been delete
 """
 
 def loadViewInInterimServer(viewName=None, viewFileNameForInterim=None, jobFileNamesForViewInInterim=None):
+    """
+    Load a view and its associated jobs in the interim server.
+
+    Args:
+        viewName (str, optional): The name of the view to be created in the interim server.
+        viewFileNameForInterim (str, optional): The filename of the XML file containing the view configuration.
+        jobFileNamesForViewInInterim (list, optional): A list of filenames of the XML files containing the job configurations.
+
+    Returns:
+        tuple: A tuple containing a boolean indicating the success of the operation and a list of job names associated with the view.
+    """
     jobNames = []
 
     if not config.interimConn:
@@ -49,7 +60,16 @@ def loadViewInInterimServer(viewName=None, viewFileNameForInterim=None, jobFileN
 
 
 def test_interim_cleanup():
+    """
+    Test Interim Cleanup.
 
+    This test will load a view with two jobs in the interim server, delete the associated job, run the interim cleanup, and assert that the view is deleted from the interim server.
+
+    1. Load a view with two jobs in the interim server.
+    2. Delete the associated job.
+    3. Run the interim cleanup.
+    4. Assert that the view is deleted from the interim server.
+    """
     viewName = "Interim Cleanup View"
     jobNames = []
 
