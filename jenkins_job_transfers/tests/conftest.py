@@ -1,4 +1,5 @@
 import pytest
+import os
 
 def pytest_addoption(parser):
     """Define custom command-line options for pytest."""
@@ -39,3 +40,32 @@ def jenkinsCreds(request):
             "password": interim_password,
         },
     }
+
+def pytest_collection_modifyitems(items):
+    """Sort tests in the order they should be run.
+    
+    This hook is used to sort the tests in the order they should be run. The order is as follows:
+    
+    1. test_servers.py
+    2. test_connect.py
+    3. test_check_plugin_dependencies.py
+    4. test_check_and_install_plugin_dependencies.py
+    5. test_check_publish_standards.py
+    6. test_transfer.py
+    7. test_interim_cleanup.py
+    8. test_production_cleanup.py
+    
+    This is done to ensure that the tests are run in a way that minimizes the number of times the servers need to be connected to and disconnected from.
+    """
+    order = {
+        "test_servers.py": 1,
+        "test_connect.py": 2,
+        "test_check_plugin_dependencies.py": 3,
+        "test_check_and_install_plugin_dependencies.py": 4,
+        "test_check_publish_standards.py": 5,
+        "test_transfer.py": 6,
+        "test_interim_cleanup.py": 7,
+        "test_production_cleanup.py": 8
+    }
+    
+    items.sort(key=lambda item: order.get(os.path.basename(item.nodeid.split("::")[0]), 999))
