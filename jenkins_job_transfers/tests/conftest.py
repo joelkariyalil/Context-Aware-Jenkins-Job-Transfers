@@ -1,5 +1,11 @@
 import pytest
 import os
+import jenkins
+import logging
+from . import config
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def pytest_addoption(parser):
     """Define custom command-line options for pytest."""
@@ -10,7 +16,7 @@ def pytest_addoption(parser):
     parser.addoption("--interim_username", action="store", help="Username for Interim Jenkins Server")
     parser.addoption("--interim_password", action="store", help="Password for Interim Jenkins Server")
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def jenkinsCreds(request):
     """Retrieve and validate Jenkins server credentials from pytest command-line options."""
     production_machine_url = request.config.getoption("--production_url")
@@ -20,13 +26,13 @@ def jenkinsCreds(request):
     interim_username = request.config.getoption("--interim_username")
     interim_password = request.config.getoption("--interim_password")
 
-    # Assert that all credentials are provided and valid
-    assert production_machine_url is not None, "Production URL must be provided using --production_url."
-    assert interim_machine_url is not None, "Interim URL must be provided using --interim_url."
-    assert production_username is not None, "Production username must be provided using --production_username."
-    assert production_password is not None, "Production password must be provided using --production_password."
-    assert interim_username is not None, "Interim username must be provided using --interim_username."
-    assert interim_password is not None, "Interim password must be provided using --interim_password."
+    # Assert that all credentials are provided
+    assert production_machine_url is not None, "Production URL must be provided"
+    assert interim_machine_url is not None, "Interim URL must be provided"
+    assert production_username is not None, "Production username must be provided"
+    assert production_password is not None, "Production password must be provided"
+    assert interim_username is not None, "Interim username must be provided"
+    assert interim_password is not None, "Interim password must be provided"
 
     return {
         "production": {
@@ -42,21 +48,7 @@ def jenkinsCreds(request):
     }
 
 def pytest_collection_modifyitems(items):
-    """Sort tests in the order they should be run.
-    
-    This hook is used to sort the tests in the order they should be run. The order is as follows:
-    
-    1. test_servers.py
-    2. test_connect.py
-    3. test_check_plugin_dependencies.py
-    4. test_check_and_install_plugin_dependencies.py
-    5. test_check_publish_standards.py
-    6. test_transfer.py
-    7. test_interim_cleanup.py
-    8. test_production_cleanup.py
-    
-    This is done to ensure that the tests are run in a way that minimizes the number of times the servers need to be connected to and disconnected from.
-    """
+    """Sort tests in the order they should be run."""
     order = {
         "test_servers.py": 1,
         "test_connect.py": 2,
@@ -69,3 +61,31 @@ def pytest_collection_modifyitems(items):
     }
     
     items.sort(key=lambda item: order.get(os.path.basename(item.nodeid.split("::")[0]), 999))
+
+@pytest.fixture(scope="session", autouse=True)
+def ensure_server_connections(jenkinsCreds):
+    """Ensure server connections are established before any tests run."""
+
+    try:
+        # Create Jenkins objects for both servers
+        config.productionConn = jenkins.Jenkins(
+            jenkinsCreds["production"]["url"],
+            username=jenkinsCreds["production"]["username"],
+            password=jenkinsCreds["production"]["password"]
+        )
+        config.interimConn = jenkins.Jenkins(
+            jenkinsCreds["interim"]["url"],
+            username=jenkinsCreds["interim"]["username"],
+            password=jenkinsCreds["interim"]["password"]
+        )
+
+        config.productionConn.get_info()
+        config.interimConn.get_info()
+        
+        yield
+
+        config.productionConn = None
+        config.interimConn = None
+        
+    except Exception as e:
+        pytest.exit(f"Failed to Connect to Jenkins Servers: \n\n{e}", returncode=1)

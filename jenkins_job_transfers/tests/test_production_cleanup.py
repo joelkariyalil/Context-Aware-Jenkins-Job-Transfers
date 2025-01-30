@@ -32,7 +32,7 @@ def loadViewInProductionServer(viewName=None, viewFileNameForProduction=None, jo
         tuple: A tuple containing a boolean indicating whether the view was loaded and a list of job names that were loaded with the view.
     """
     job_names = []
-    production_conn = config.production_conn
+    production_conn = config.productionConn
 
     try:
         # Construct path to view XML file
