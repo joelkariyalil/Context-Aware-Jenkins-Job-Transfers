@@ -61,5 +61,5 @@ Feel free to reach out via [Social Media Handles](https://context-aware-jenkins-
 
 ## Support the Author
 
-If you appreciate my work, consider supporting me:  
+If you appreciate my work, consider supporting me: 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-F7DF1E?logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://buymeacoffee.com/joelkariyalil)
